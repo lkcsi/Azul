@@ -53,8 +53,8 @@ public class GameController {
     }
 
     @PostMapping(path = "/players/new/{name}")
-    public void addPlayer(@PathVariable("name") String playerName){
-        game.registerPlayer(playerName);
+    public Code addPlayer(@PathVariable("name") String playerName){
+        return game.registerPlayer(playerName);
     }
 
     @GetMapping(path = "/game")

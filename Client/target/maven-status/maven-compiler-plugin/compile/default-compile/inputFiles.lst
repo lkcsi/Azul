@@ -1,0 +1,12 @@
+/home/roland/Dev/java/AzulClient/src/main/java/com/azul/client/controllers/GameController.java
+/home/roland/Dev/java/AzulClient/src/main/java/com/azul/client/models/Wall.java
+/home/roland/Dev/java/AzulClient/src/main/java/com/azul/client/dtos/GameDto.java
+/home/roland/Dev/java/AzulClient/src/main/java/com/azul/client/graphics/MainForm.java
+/home/roland/Dev/java/AzulClient/src/main/java/com/azul/client/dtos/PickForm.java
+/home/roland/Dev/java/AzulClient/src/main/java/com/azul/client/graphics/WaitingForm.java
+/home/roland/Dev/java/AzulClient/src/main/java/com/azul/client/dtos/PlayerDto.java
+/home/roland/Dev/java/AzulClient/src/main/java/com/azul/client/dtos/Code.java
+/home/roland/Dev/java/AzulClient/src/main/java/com/azul/client/dtos/FactoryDto.java
+/home/roland/Dev/java/AzulClient/src/main/java/com/azul/client/Main.java
+/home/roland/Dev/java/AzulClient/src/main/java/com/azul/client/models/Tile.java
+/home/roland/Dev/java/AzulClient/src/main/java/com/azul/client/models/Color.java
