@@ -27,6 +27,11 @@ public class GameForm extends JFrame {
     ArrayList<ArrayList<JButton>> patternLineButtons = new ArrayList<>();
     ArrayList<ArrayList<JButton>> factoryButtons = new ArrayList<>();
 
+    ArrayList<PlayerDto> players;
+    ArrayList<FactoryDto> factories;
+    GameDto game;
+
+
     String playerName;
     PlayerDto currentPlayer;
 
@@ -94,35 +99,36 @@ public class GameForm extends JFrame {
         c.gridy = 0; c.gridx = 1; c.weightx = 1.0; c.gridwidth = 2;
         infoPanel.add(nameTextField, c);
 
-        c.gridy = 1; c.gridx = 0; c.weightx = 0.0;
+        c.gridy = 1; c.gridx = 0; c.weightx = 0.0; c.gridwidth = 1;
         infoPanel.add(new JLabel("Your Score:"), c);
 
         c.gridy = 1; c.gridx = 1; c.weightx = 1.0; c.gridwidth = 2;
         infoPanel.add(scoreTextField, c);
 
-        c.gridy = 2; c.gridx = 0; c.weightx = 0.0;
+        c.gridy = 2; c.gridx = 0; c.weightx = 0.0; c.gridwidth = 1;
         infoPanel.add(new JLabel("Current player:"), c);
 
         c.gridy = 2; c.gridx = 1; c.weightx = 1.0; c.gridwidth = 2;
         infoPanel.add(currentNameTextField, c);
 
-        c.gridy = 3; c.gridx = 0; c.weightx = 0.0;
+        c.gridy = 3; c.gridx = 0; c.weightx = 0.0; c.gridwidth = 1;
         infoPanel.add(new JLabel("Standing:"), c);
 
         c.gridy = 3; c.gridx = 1; c.weightx = 1.0; c.gridwidth = 2;
         infoPanel.add(scoresTextField, c);
 
-        c.gridy = 4; c.gridx = 0; c.weightx = 0.2;
+        c.gridy = 4; c.gridx = 0; c.weightx = 0.2; c.gridwidth = 1;
         infoPanel.add(new JLabel("Your choice:"), c);
 
-        c.gridy = 4; c.gridx = 1; c.weightx = 0.7;
+        c.gridy = 4; c.gridx = 1; c.weightx = 1.0;
         infoPanel.add(choiceTextField, c);
 
         var submit = new JButton();
         submit.addActionListener(actionEvent -> {
             choice();
         });
-        c.gridy = 4; c.gridx = 2; c.weightx = 0.2;
+        c.fill = GridBagConstraints.BOTH;
+        c.gridy = 4; c.gridx = 2; c.weightx = 0.2; c.weighty = 0.1;
         infoPanel.add(submit, c);
 
         return infoPanel;
@@ -288,14 +294,18 @@ public class GameForm extends JFrame {
                 System.out.println("Update");
 
                 try {
-                    var game = GameController.getGame();
-                    var players = GameController.getPlayers();
-                    var factories = GameController.getFactories();
+                    game = GameController.getGame();
+                    players = GameController.getPlayers();
+                    factories = GameController.getFactories();
+                    currentPlayer = players.stream()
+                            .filter(p -> p.getName().equalsIgnoreCase(game.getCurrentPlayer()))
+                            .findFirst()
+                            .get();
 
-                    updateInfo(game, players);
-                    updateWall(currentPlayer);
-                    updatePatternLine(currentPlayer);
-                    updateFactories(factories);
+                    updateInfo();
+                    updateWall();
+                    updatePatternLine();
+                    updateFactories();
 
                     Thread.sleep(2000);
                 } catch (Exception e) {
@@ -305,11 +315,7 @@ public class GameForm extends JFrame {
         };
     }
 
-    public void updateInfo(GameDto game, ArrayList<PlayerDto> players){
-        currentPlayer = players.stream()
-                .filter(p -> p.getName().equalsIgnoreCase(game.getCurrentPlayer()))
-                .findFirst()
-                .get();
+    public void updateInfo(){
 
         currentNameTextField.setText(currentPlayer.getName());
         scoreTextField.setText(String.valueOf(currentPlayer.getScore()));
@@ -318,8 +324,8 @@ public class GameForm extends JFrame {
                 .collect(Collectors.toList())));
     }
 
-    public void updateWall(PlayerDto playerDto){
-        var playerWall = playerDto.getWall();
+    public void updateWall(){
+        var playerWall = currentPlayer.getWall();
         var wall = Wall.getInstance();
 
         playerWall.forEach((line) -> {
@@ -336,8 +342,8 @@ public class GameForm extends JFrame {
         });
     }
 
-    public void updatePatternLine(PlayerDto playerDto){
-        var playerPattern = playerDto.getPatternLines();
+    public void updatePatternLine(){
+        var playerPattern = currentPlayer.getPatternLines();
 
         playerPattern.forEach((line) -> {
             int lineIndex = playerPattern.indexOf(line);
@@ -352,7 +358,7 @@ public class GameForm extends JFrame {
         });
     }
 
-    public void updateFactories(ArrayList<FactoryDto> factories){
+    public void updateFactories(){
         for(var factory : factories){
             var buttons = factoryButtons.get(factories.indexOf(factory));
             buttons.forEach((b) -> {
