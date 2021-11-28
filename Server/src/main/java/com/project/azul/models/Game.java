@@ -2,6 +2,7 @@ package com.project.azul.models;
 
 import com.project.azul.api.Code;
 
+import java.awt.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -81,7 +82,7 @@ public class Game {
         bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(Color.BLACK))));
         bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(Color.RED))));
         bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(Color.BLUE))));
-        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(Color.CYAN))));
+        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(Color.WHITE))));
         bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(Color.YELLOW))));
     }
 
@@ -109,12 +110,11 @@ public class Game {
         if(!playerName.equalsIgnoreCase(currentPlayer.getName()))
             return Code.WRONG_PLAYER_ORDER;
 
-        var color = Arrays.stream(Color.values())
-                .filter(c -> c.toString().equalsIgnoreCase(colorName)).findFirst();
-        if(!color.isPresent())
+        var color = Color.getColor(colorName);
+        if(color == null)
             return Code.COLOR_DOES_NOT_EXIST;
 
-        var pickedFromFactoryTiles = factory.removeTiles(color.get());
+        var pickedFromFactoryTiles = factory.removeTiles(color);
         if(pickedFromFactoryTiles.size() == 0)
             return Code.COLOR_NOT_FOUND_IN_FACTORY;
 

@@ -11,8 +11,10 @@ public class WaitingForm extends JFrame {
     JLabel statusLabel = new JLabel("Waiting for players...");
     JLabel playersLabel = new JLabel("Players");
     JTextField namesText = new JTextField();
+    private String playerName;
 
-    public WaitingForm(String name) {
+    public WaitingForm(String playerName) {
+        this.playerName = playerName;
         var screen = Toolkit.getDefaultToolkit().getScreenSize();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -54,9 +56,13 @@ public class WaitingForm extends JFrame {
                                 .map(t -> t.getName()).collect(Collectors.toList())));
 
                         var game = GameController.getGame();
-                        if (game.getState() == "READY")
-                            return;
+                        if (game.getState().equalsIgnoreCase("READY")){
+                            var gameForm = new GameForm(playerName);
+                            gameForm.setVisible(true);
 
+                            setVisible(false);
+                            return;
+                        }
                         Thread.sleep(2000);
                     } catch (Exception e) {
                         e.printStackTrace();

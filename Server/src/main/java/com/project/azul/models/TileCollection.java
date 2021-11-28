@@ -2,6 +2,7 @@ package com.project.azul.models;
 
 import com.project.azul.api.Code;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
