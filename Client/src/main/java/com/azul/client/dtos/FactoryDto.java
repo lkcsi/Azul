@@ -1,16 +1,16 @@
 package com.azul.client.dtos;
 
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class FactoryDto {
     private int id;
-    private List<String> tiles;
+    private ArrayList<String> tiles;
 
     public int getId() {
         return id;
     }
-    public List<String> getTiles() {
+    public ArrayList<String> getTiles() {
         return tiles;
     }
 }

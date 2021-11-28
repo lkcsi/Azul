@@ -57,7 +57,7 @@ public class WaitingForm extends JFrame {
 
                         var game = GameController.getGame();
                         if (game.getState().equalsIgnoreCase("READY")){
-                            var gameForm = new GameForm(playerName);
+                            var gameForm = new GameForm(playerName, players.size());
                             gameForm.setVisible(true);
 
                             setVisible(false);
