@@ -2,7 +2,6 @@ package com.project.azul.models;
 
 import com.project.azul.api.Code;
 
-import java.awt.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -11,10 +10,10 @@ public class Game {
     private ArrayList<Factory> factories = new ArrayList<Factory>();
     private TileCollection bag = new TileCollection();
     private TileCollection drop = new TileCollection();
-    private Factory center = new Factory(0);
+    private Factory center = new Factory(10);
     private int numberOfPlayers;
     private State state;
-    private Player currentPlayer;
+    private int currentPlayerId;
 
     public Game(int numberOfPlayers)
     {
@@ -26,7 +25,7 @@ public class Game {
     }
 
     private void createFactories(int numberOfPlayers){
-        int factoryId = 1;
+        int factoryId = 0;
         for(int i = 0 ; i < numberOfPlayers * 2 + 1; i++){
             factories.add(new Factory(factoryId++));
         }
@@ -79,11 +78,11 @@ public class Game {
 
     private void createTiles()
     {
-        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(Color.BLACK))));
-        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(Color.RED))));
-        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(Color.BLUE))));
-        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(Color.WHITE))));
-        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(Color.YELLOW))));
+        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(TileColor.BLACK))));
+        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(TileColor.RED))));
+        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(TileColor.BLUE))));
+        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(TileColor.WHITE))));
+        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(TileColor.YELLOW))));
     }
 
     public Code registerPlayer(String name)
@@ -100,17 +99,18 @@ public class Game {
 
         if(numberOfPlayers == players.size()){
             state = State.READY;
-            currentPlayer = players.get(0);
+            currentPlayerId = players.get(0).getId();
         }
         return Code.SUCCESS;
     }
 
     private Code pick(String playerName, Factory factory, int lineNumber, String colorName){
 
+        var currentPlayer = getCurrentPlayer();
         if(!playerName.equalsIgnoreCase(currentPlayer.getName()))
             return Code.WRONG_PLAYER_ORDER;
 
-        var color = Color.getColor(colorName);
+        var color = TileColor.valueOf(colorName);
         if(color == null)
             return Code.COLOR_DOES_NOT_EXIST;
 
@@ -118,9 +118,15 @@ public class Game {
         if(pickedFromFactoryTiles.size() == 0)
             return Code.COLOR_NOT_FOUND_IN_FACTORY;
 
-        var result = currentPlayer.addTilesToLine(pickedFromFactoryTiles, lineNumber);
-        if(result != Code.SUCCESS)
-            return result;
+        if(!currentPlayer.getPatternLines().isAnyOption(color)){
+            currentPlayer.getFloor().addTiles(pickedFromFactoryTiles);
+        }
+
+        else{
+            var result = currentPlayer.addTilesToLine(pickedFromFactoryTiles, lineNumber);
+            if(result != Code.SUCCESS)
+                return result;
+        }
 
         bag.addTiles(pickedFromFactoryTiles);
 
@@ -159,8 +165,9 @@ public class Game {
                 state = State.FINISHED;
                 return;
             }
+            players.forEach(p -> bag.addTiles(p.getFloor().removeTiles()));
             fillFactories();
-            currentPlayer = players.get(0);
+            currentPlayerId = players.get(0).getId();
             return;
         }
         nextPlayer();
@@ -176,13 +183,14 @@ public class Game {
 
     private void nextPlayer()
     {
+        var currentPlayer = getCurrentPlayer();
         int index = players.indexOf(currentPlayer);
         index = index + 1;
 
         if(index >= players.size())
             index = 0;
 
-        currentPlayer = players.get(index);
+        currentPlayerId = players.get(index).getId();
     }
 
     public State getState(){
@@ -190,13 +198,16 @@ public class Game {
     }
 
     public Player getCurrentPlayer() {
-        return currentPlayer;
+        var player = players.stream().filter(p -> p.getId() == currentPlayerId).findFirst();
+        if(player.isPresent())
+            return player.get();
+        return null;
     }
 
     public Game clone(){
         var game = new Game(numberOfPlayers);
         game.players = players.stream().map(p -> p.clone()).collect(Collectors.toCollection(ArrayList::new));
-        game.currentPlayer = currentPlayer;
+        game.currentPlayerId = currentPlayerId;
         game.factories = factories.stream().map(f -> f.clone()).collect(Collectors.toCollection(ArrayList::new));
         game.center = center.clone();
         game.drop = drop.clone();

@@ -2,9 +2,7 @@ package com.project.azul.models;
 
 import com.project.azul.api.Code;
 
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collection;
 
 public class PatternLine extends TileCollection{
 
@@ -18,7 +16,7 @@ public class PatternLine extends TileCollection{
 
     @Override
     public Code addTiles(ArrayList<Tile> tilesToAdd) {
-        if (capacity - size() == 0)
+        if (isFull())
             return Code.PATTERN_LINE_IS_FULL;
 
         var color = getColor();
@@ -34,7 +32,7 @@ public class PatternLine extends TileCollection{
         return Code.SUCCESS;
     }
 
-    public Color getColor() {
+    public TileColor getColor() {
         var tile = getTiles().stream().filter(t -> t.getColor() != null).findFirst();
         if(tile.isPresent())
             return tile.get().getColor();
@@ -49,6 +47,9 @@ public class PatternLine extends TileCollection{
         return lineNumber;
     }
 
+    public boolean isFull(){
+        return capacity == size();
+    }
     public PatternLine clone(){
         var result = new PatternLine(capacity);
         result.addTiles(getTiles());

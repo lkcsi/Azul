@@ -84,6 +84,7 @@ public class GameController {
 
                 //Send
                 if(!jsonInputString.isEmpty()){
+                    con.setDoOutput(true);
                     try(OutputStream os = con.getOutputStream()) {
                         byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
                         os.write(input, 0, input.length);

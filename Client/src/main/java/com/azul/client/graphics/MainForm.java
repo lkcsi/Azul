@@ -46,12 +46,10 @@ public class MainForm extends JFrame{
             public void actionPerformed(ActionEvent actionEvent) {
                 var result = GameController.registerPlayer(name.getText());
                 if(result.getCode() == Code.SUCCESS.getCode()){
-                    var form = new WaitingForm(name.getName());
+                    var form = new WaitingForm(name.getText());
                     form.setVisible(true);
-
                     setVisible(false);
                 }
-
             }
         });
 

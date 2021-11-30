@@ -10,18 +10,24 @@ public class PatternLines {
 
     private ArrayList<PatternLine> patternLines = new ArrayList<PatternLine>();
     public PatternLines(){
-       patternLines.add(new PatternLine(1));
+        patternLines.add(new PatternLine(1));
         patternLines.add(new PatternLine(2));
         patternLines.add(new PatternLine(3));
         patternLines.add(new PatternLine(4));
         patternLines.add(new PatternLine(5));
     }
 
+    public boolean isAnyOption(TileColor color){
+        return patternLines.stream().anyMatch(line -> {
+            return line.getColor() == null || (line.getColor() == color && !line.isFull());
+        });
+    }
+
     public Code addTilesToLine(ArrayList<Tile> tiles, int lineNumber) {
-        if(lineNumber < 1 || lineNumber > 5)
+        if(lineNumber < 0 || lineNumber > 4)
             return Code.PATTERN_LINE_DOES_NOT_EXIST;
 
-        var line = patternLines.get(lineNumber-1);
+        var line = patternLines.get(lineNumber);
         return line.addTiles(tiles);
     }
 

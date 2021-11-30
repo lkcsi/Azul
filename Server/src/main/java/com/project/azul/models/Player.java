@@ -21,6 +21,9 @@ public class Player {
     }
 
     public Code addTilesToLine(ArrayList<Tile> tiles, int lineNumber) {
+        if(wall.isPlaced(lineNumber, tiles.get(0).getColor())){
+            return Code.COLOR_IS_FILLED_IN_WALL;
+        }
         var result = patternLines.addTilesToLine(tiles, lineNumber);
         floor.addTiles(tiles);
         return result;
@@ -49,6 +52,17 @@ public class Player {
        else
            score += (row + column);
 
+       switch (floor.getTiles().size()){
+           case 0: break;
+           case 1: score -= 1; break;
+           case 2: score -= 2; break;
+           case 3: score -= 4; break;
+           case 4: score -= 6; break;
+           case 5: score -= 8; break;
+           case 6: score -= 11; break;
+           case 7: score -= 14; break;
+       }
+
        line.clear();
     }
 
@@ -68,6 +82,11 @@ public class Player {
     public Wall getWall() {
         return wall;
     }
+
+    public Floor getFloor(){
+        return floor;
+    }
+
     public String getName() {
         return name;
     }

@@ -18,6 +18,7 @@ public class Code {
     public static Code GAME_NOT_STARTED = new Code(13, "Game not started");
     public static Code CENTER_IS_EMPTY = new Code(14, "Center is empty");
     public static Code INVALID_NUMBER_OF_PLAYERS = new Code(15, "Invalid number of players");
+    public static Code COLOR_IS_FILLED_IN_WALL = new Code(16, "Color is filled in wall");
 
     private int code;
     private String description;

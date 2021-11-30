@@ -1,15 +1,13 @@
 package com.project.azul.models;
 
-import java.awt.*;
-
 public class Tile {
-    private final Color color;
+    private final TileColor color;
 
-    public Tile(Color color){
+    public Tile(TileColor color){
         this.color = color;
     }
 
-    public Color getColor() {
+    public TileColor getColor() {
         return color;
     }
 }

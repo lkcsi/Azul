@@ -1,6 +1,5 @@
 package com.project.azul.models;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,11 +10,11 @@ public class Wall {
 
     public Wall()
     {
-        wall.add(new ArrayList<TilePlace>(Arrays.asList(new TilePlace(Color.BLUE), new TilePlace(Color.YELLOW), new TilePlace(Color.RED), new TilePlace(Color.BLACK), new TilePlace(Color.CYAN))));
-        wall.add(new ArrayList<TilePlace>(Arrays.asList(new TilePlace(Color.CYAN), new TilePlace(Color.BLUE), new TilePlace(Color.YELLOW), new TilePlace(Color.RED), new TilePlace(Color.BLACK))));
-        wall.add(new ArrayList<TilePlace>(Arrays.asList(new TilePlace(Color.BLACK), new TilePlace(Color.CYAN), new TilePlace(Color.BLUE), new TilePlace(Color.YELLOW), new TilePlace(Color.RED))));
-        wall.add(new ArrayList<TilePlace>(Arrays.asList(new TilePlace(Color.RED), new TilePlace(Color.BLACK), new TilePlace(Color.CYAN), new TilePlace(Color.BLUE), new TilePlace(Color.YELLOW))));
-        wall.add(new ArrayList<TilePlace>(Arrays.asList(new TilePlace(Color.YELLOW), new TilePlace(Color.RED), new TilePlace(Color.BLACK), new TilePlace(Color.CYAN), new TilePlace(Color.BLUE))));
+        wall.add(new ArrayList<>(Arrays.asList(new TilePlace(TileColor.BLUE), new TilePlace(TileColor.YELLOW), new TilePlace(TileColor.RED), new TilePlace(TileColor.BLACK), new TilePlace(TileColor.WHITE))));
+        wall.add(new ArrayList<>(Arrays.asList(new TilePlace(TileColor.WHITE), new TilePlace(TileColor.BLUE), new TilePlace(TileColor.YELLOW), new TilePlace(TileColor.RED), new TilePlace(TileColor.BLACK))));
+        wall.add(new ArrayList<>(Arrays.asList(new TilePlace(TileColor.BLACK), new TilePlace(TileColor.WHITE), new TilePlace(TileColor.BLUE), new TilePlace(TileColor.YELLOW), new TilePlace(TileColor.RED))));
+        wall.add(new ArrayList<>(Arrays.asList(new TilePlace(TileColor.RED), new TilePlace(TileColor.BLACK), new TilePlace(TileColor.WHITE), new TilePlace(TileColor.BLUE), new TilePlace(TileColor.YELLOW))));
+        wall.add(new ArrayList<>(Arrays.asList(new TilePlace(TileColor.YELLOW), new TilePlace(TileColor.RED), new TilePlace(TileColor.BLACK), new TilePlace(TileColor.WHITE), new TilePlace(TileColor.BLUE))));
     }
 
     public void add(PatternLine line, Tile tile)
@@ -26,7 +25,7 @@ public class Wall {
                 .findFirst().get().setPlaced(true);
 
     }
-    public boolean isPlaced(int lineNumber, Color color)
+    public boolean isPlaced(int lineNumber, TileColor color)
     {
         return wall.get(lineNumber)
                 .stream()
@@ -34,7 +33,7 @@ public class Wall {
                 .findFirst().get().isPlaced();
     }
 
-    public int getRowCount(int lineNumber, Color color){
+    public int getRowCount(int lineNumber, TileColor color){
         var line = wall.get(lineNumber);
         var tile = line.stream().filter(t -> t.getColor() == color).findFirst().get();
         var tileIndex = line.indexOf(tile);
@@ -57,7 +56,7 @@ public class Wall {
         return result;
     }
 
-    public int getColumnCount(int lineNumber, Color color){
+    public int getColumnCount(int lineNumber, TileColor color){
         var line = wall.get(lineNumber);
         var tile = line.stream().filter(t -> t.getColor() == color).findFirst().get();
         var tileIndex = line.indexOf(tile);
@@ -103,10 +102,10 @@ public class Wall {
     }
 
     class TilePlace{
-        private final Color color;
+        private final TileColor color;
         private boolean placed;
 
-        public TilePlace(Color color){
+        public TilePlace(TileColor color){
             this.color = color;
             placed = false;
         }
@@ -119,7 +118,7 @@ public class Wall {
            this.placed = placed;
         }
 
-        public Color getColor() {
+        public TileColor getColor() {
             return color;
         }
     }

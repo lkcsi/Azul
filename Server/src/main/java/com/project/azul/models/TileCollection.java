@@ -2,9 +2,7 @@ package com.project.azul.models;
 
 import com.project.azul.api.Code;
 
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.stream.Collectors;
 
 public class TileCollection {
@@ -29,11 +27,11 @@ public class TileCollection {
         return new ArrayList<Tile>(tiles);
     }
 
-    public ArrayList<Tile> getTiles(Color color){
+    public ArrayList<Tile> getTiles(TileColor color){
         return tiles.stream().filter(t -> t.getColor() == color).collect(Collectors.toCollection(ArrayList::new));
     }
 
-    public ArrayList<Tile> removeTiles(Color color){
+    public ArrayList<Tile> removeTiles(TileColor color){
         var result = tiles.stream().filter(t -> t.getColor() == color).collect(Collectors.toCollection(ArrayList::new));
         tiles.removeAll(result);
         return result;

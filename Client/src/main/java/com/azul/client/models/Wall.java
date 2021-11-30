@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Wall {
-    private ArrayList<ArrayList<Color>> tiles;
+    private ArrayList<ArrayList<TileColor>> tiles;
     private static Wall instance;
 
     public static Wall getInstance(){
@@ -16,15 +16,15 @@ public class Wall {
     }
 
     public Wall(){
-        tiles = new ArrayList<ArrayList<Color>>();
-        tiles.add(new ArrayList<Color>(Arrays.asList(Color.BLUE, Color.YELLOW, Color.RED, Color.BLACK, Color.WHITE)));
-        tiles.add(new ArrayList<Color>(Arrays.asList(Color.WHITE, Color.BLUE, Color.YELLOW, Color.RED, Color.BLACK)));
-        tiles.add(new ArrayList<Color>(Arrays.asList(Color.BLACK, Color.WHITE, Color.BLUE, Color.YELLOW, Color.RED)));
-        tiles.add(new ArrayList<Color>(Arrays.asList(Color.RED, Color.BLACK, Color.WHITE, Color.BLUE, Color.YELLOW)));
-        tiles.add(new ArrayList<Color>(Arrays.asList(Color.YELLOW, Color.RED, Color.BLACK, Color.WHITE, Color.BLUE)));
+        tiles = new ArrayList<>();
+        tiles.add(new ArrayList<>(Arrays.asList(TileColor.BLUE, TileColor.YELLOW, TileColor.RED, TileColor.BLACK, TileColor.WHITE)));
+        tiles.add(new ArrayList<>(Arrays.asList(TileColor.WHITE, TileColor.BLUE, TileColor.YELLOW, TileColor.RED, TileColor.BLACK)));
+        tiles.add(new ArrayList<>(Arrays.asList(TileColor.BLACK, TileColor.WHITE, TileColor.BLUE, TileColor.YELLOW, TileColor.RED)));
+        tiles.add(new ArrayList<>(Arrays.asList(TileColor.RED, TileColor.BLACK, TileColor.WHITE, TileColor.BLUE, TileColor.YELLOW)));
+        tiles.add(new ArrayList<>(Arrays.asList(TileColor.YELLOW, TileColor.RED, TileColor.BLACK, TileColor.WHITE, TileColor.BLUE)));
     }
 
-    public ArrayList<Color> get(int index){
+    public ArrayList<TileColor> get(int index){
         return tiles.get(index);
     }
 }

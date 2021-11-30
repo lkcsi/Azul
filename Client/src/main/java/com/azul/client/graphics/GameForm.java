@@ -1,9 +1,8 @@
 package com.azul.client.graphics;
 
 import com.azul.client.controllers.GameController;
-import com.azul.client.dtos.FactoryDto;
-import com.azul.client.dtos.GameDto;
-import com.azul.client.dtos.PlayerDto;
+import com.azul.client.dtos.*;
+import com.azul.client.models.TileColor;
 import com.azul.client.models.Wall;
 
 import javax.swing.*;
@@ -11,12 +10,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.stream.Collectors;
 
 public class GameForm extends JFrame {
 
-    private final int numberOfFactories;
     private final Dimension tileSize;
     JTextField nameTextField = new JTextField();
     JTextField scoreTextField = new JTextField();
@@ -26,14 +23,21 @@ public class GameForm extends JFrame {
     ArrayList<ArrayList<JButton>> wallButtons = new ArrayList<>();
     ArrayList<ArrayList<JButton>> patternLineButtons = new ArrayList<>();
     ArrayList<ArrayList<JButton>> factoryButtons = new ArrayList<>();
+    ArrayList<JButton> centerButtons = new ArrayList<>();
+    ArrayList<JButton> floorButtons = new ArrayList<>();
 
-    ArrayList<PlayerDto> players;
-    ArrayList<FactoryDto> factories;
-    GameDto game;
+    private ArrayList<PlayerDto> players;
+    private ArrayList<FactoryDto> factories;
+    private FactoryDto center;
+    private GameDto game;
 
-
-    String playerName;
-    PlayerDto currentPlayer;
+    private final String playerName;
+    private final int numberOfFactories;
+    private PlayerDto currentPlayer;
+    private String selectedColorName;
+    private Integer selectedFactoryId;
+    private boolean centerSelected = false;
+    private PlayerDto player;
 
     public GameForm(String playerName, int numberOfPlayers){
 
@@ -45,6 +49,7 @@ public class GameForm extends JFrame {
         nameTextField.setEnabled(false);
         choiceTextField.setEnabled(false);
 
+        nameTextField.setText(playerName);
 
         var screen = Toolkit.getDefaultToolkit().getScreenSize();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -79,11 +84,14 @@ public class GameForm extends JFrame {
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0; c.gridy = 3; c.weightx = 1.0; c.weighty = 0.2;
         c.gridwidth = 2;
-        var factories = getFactories();
-        add(factories, c);
+        add(getFactories(), c);
+
+        c.fill = GridBagConstraints.CENTER;
+        c.gridx = 0; c.gridy = 4; c.weightx = 1.0; c.weighty = 0.2;
+        add(getCenter(), c);
 
         Thread t = new Thread(update());
-        //t.start();
+        t.start();
     }
 
     public JPanel infoPanel(){
@@ -96,47 +104,29 @@ public class GameForm extends JFrame {
         c.gridy = 0; c.gridx = 0;
         infoPanel.add(new JLabel("Your Name:"), c);
 
-        c.gridy = 0; c.gridx = 1; c.weightx = 1.0; c.gridwidth = 2;
+        c.gridy = 0; c.gridx = 1; c.weightx = 1.0;
         infoPanel.add(nameTextField, c);
 
-        c.gridy = 1; c.gridx = 0; c.weightx = 0.0; c.gridwidth = 1;
+        c.gridy = 1; c.gridx = 0; c.weightx = 0.0;
         infoPanel.add(new JLabel("Your Score:"), c);
 
-        c.gridy = 1; c.gridx = 1; c.weightx = 1.0; c.gridwidth = 2;
+        c.gridy = 1; c.gridx = 1; c.weightx = 1.0;
         infoPanel.add(scoreTextField, c);
 
-        c.gridy = 2; c.gridx = 0; c.weightx = 0.0; c.gridwidth = 1;
+        c.gridy = 2; c.gridx = 0; c.weightx = 0.0;
         infoPanel.add(new JLabel("Current player:"), c);
 
-        c.gridy = 2; c.gridx = 1; c.weightx = 1.0; c.gridwidth = 2;
+        c.gridy = 2; c.gridx = 1; c.weightx = 1.0;
         infoPanel.add(currentNameTextField, c);
 
-        c.gridy = 3; c.gridx = 0; c.weightx = 0.0; c.gridwidth = 1;
+        c.gridy = 3; c.gridx = 0; c.weightx = 0.0;
         infoPanel.add(new JLabel("Standing:"), c);
 
-        c.gridy = 3; c.gridx = 1; c.weightx = 1.0; c.gridwidth = 2;
+        c.gridy = 3; c.gridx = 1; c.weightx = 1.0;
         infoPanel.add(scoresTextField, c);
-
-        c.gridy = 4; c.gridx = 0; c.weightx = 0.2; c.gridwidth = 1;
-        infoPanel.add(new JLabel("Your choice:"), c);
-
-        c.gridy = 4; c.gridx = 1; c.weightx = 1.0;
-        infoPanel.add(choiceTextField, c);
-
-        var submit = new JButton();
-        submit.addActionListener(actionEvent -> {
-            choice();
-        });
-        c.fill = GridBagConstraints.BOTH;
-        c.gridy = 4; c.gridx = 2; c.weightx = 0.2; c.weighty = 0.1;
-        infoPanel.add(submit, c);
 
         return infoPanel;
     }
-
-    private void choice() {
-    }
-
 
     public JPanel getPatternLine(){
         JPanel patternLine = new JPanel();
@@ -171,6 +161,7 @@ public class GameForm extends JFrame {
                 line.add(button);
                 patternLine.add(button, c);
             }
+            patternLineButtons.set(y, line);
         }
 
         return patternLine;
@@ -183,7 +174,13 @@ public class GameForm extends JFrame {
         wallPanel.setLayout(new GridBagLayout());
 
         var wall = Wall.getInstance();
-        wallButtons.addAll(Collections.nCopies(5, new ArrayList<JButton>(Collections.nCopies(5, null))));
+        for(int i = 0 ; i < 5 ; i++){
+            ArrayList<JButton> buttons = new ArrayList<>();
+            for(int j = 0; j < 5 ; j++){
+                buttons.add(new JButton());
+            }
+            wallButtons.add(buttons);
+        }
 
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
@@ -197,22 +194,12 @@ public class GameForm extends JFrame {
 
                 var button = new JButton();
                 button.setPreferredSize(tileSize);
-                button.setBackground(wall.get(y).get(x).darker());
+                button.setBackground(wall.get(y).get(x).getColor());
                 wallButtons.get(y).set(x, button);
-
-                final int line = y;
-                final int row = x;
-                button.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        wallClick(line,row);
-                    }
-                });
 
                 wallPanel.add(button, c);
             }
         }
-
         return wallPanel;
     }
 
@@ -231,9 +218,30 @@ public class GameForm extends JFrame {
             button.setBackground(Color.LIGHT_GRAY);
             button.setPreferredSize(tileSize);
 
+            floorButtons.add(button);
             floor.add(button, c);
         }
         return floor;
+    }
+
+    public JPanel getCenter(){
+        JPanel result = new JPanel();
+        result.setLayout(new GridLayout(2,14));
+
+        for(int i = 0; i < 28; i++){
+            var button = new JButton();
+            button.setPreferredSize(tileSize);
+            button.setBackground(Color.LIGHT_GRAY);
+            button.setEnabled(false);
+
+            final int tileId = i;
+            button.addActionListener(actionEvent -> {
+                centerClick(tileId);
+            });
+            centerButtons.add(button);
+            result.add(button);
+        }
+        return result;
     }
 
     public JPanel getFactories(){
@@ -268,6 +276,7 @@ public class GameForm extends JFrame {
                 var button = new JButton();
                 button.setBackground(Color.LIGHT_GRAY);
                 button.setPreferredSize(tileSize);
+                button.setEnabled(false);
 
                 int tileId = factory.size();
 
@@ -291,23 +300,30 @@ public class GameForm extends JFrame {
     public Runnable update(){
         return () -> {
             while(true){
-                System.out.println("Update");
-
                 try {
+                    Thread.sleep(2000);
+
                     game = GameController.getGame();
                     players = GameController.getPlayers();
                     factories = GameController.getFactories();
+                    center = GameController.getCenter();
                     currentPlayer = players.stream()
                             .filter(p -> p.getName().equalsIgnoreCase(game.getCurrentPlayer()))
+                            .findFirst()
+                            .get();
+
+                    player = players.stream()
+                            .filter(p -> p.getName().equalsIgnoreCase(playerName))
                             .findFirst()
                             .get();
 
                     updateInfo();
                     updateWall();
                     updatePatternLine();
+                    updateFloor();
                     updateFactories();
+                    updateCenter();
 
-                    Thread.sleep(2000);
                 } catch (Exception e) {
                     System.out.println("ERROR: " + e.getMessage());
                 }
@@ -316,6 +332,9 @@ public class GameForm extends JFrame {
     }
 
     public void updateInfo(){
+        if(currentPlayer == null || players == null){
+            return;
+        }
 
         currentNameTextField.setText(currentPlayer.getName());
         scoreTextField.setText(String.valueOf(currentPlayer.getScore()));
@@ -325,67 +344,175 @@ public class GameForm extends JFrame {
     }
 
     public void updateWall(){
-        var playerWall = currentPlayer.getWall();
+        if(player == null){
+            return;
+        }
+
+        var playerWall = player.getWall();
         var wall = Wall.getInstance();
 
-        playerWall.forEach((line) -> {
-            int lineIndex = playerWall.indexOf(line);
-            line.forEach( (t) -> {
-                int columnIndex = line.indexOf(t);
-
-                Color color = wall.get(lineIndex).get(columnIndex);
-                if(t.equalsIgnoreCase("Empty")) {
-                    color = color.darker();
-                }
-                wallButtons.get(lineIndex).get(columnIndex).setBackground(color);
-            });
-        });
+        System.out.println("Size: " + playerWall.size());
+        int lineIndex = 0;
+        for(var line : playerWall) {
+            int columnIndex = 0;
+            for(var tile : line) {
+                var button = wallButtons.get(lineIndex).get(columnIndex);
+                if(tile.equalsIgnoreCase("Empty"))
+                    button.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+                else
+                    button.setBorder(BorderFactory.createLineBorder(Color.GREEN, 2));
+                columnIndex += 1;
+            }
+            lineIndex += 1;
+        }
     }
 
     public void updatePatternLine(){
-        var playerPattern = currentPlayer.getPatternLines();
+        if(player == null){
+            return;
+        }
 
-        playerPattern.forEach((line) -> {
+        var playerPattern = player.getPatternLines();
+        for(var line : playerPattern) {
             int lineIndex = playerPattern.indexOf(line);
-            line.forEach( (t) -> {
-                Color color = Color.GRAY;
-                if(!playerPattern.get(lineIndex).get(0).equalsIgnoreCase("Empty")){
-                    color = Color.getColor(playerPattern.get(lineIndex).get(0));
+            int columnIndex = line.size() - 1;
+            for(var tile : line) {
+                Color color = Color.LIGHT_GRAY;
+                if(!tile.equalsIgnoreCase("empty")){
+                    color = TileColor.valueOf(tile).getColor();
                 }
-                int columnIndex = line.indexOf(t);
                 patternLineButtons.get(lineIndex).get(columnIndex).setBackground(color);
-            });
-        });
-    }
-
-    public void updateFactories(){
-        for(var factory : factories){
-            var buttons = factoryButtons.get(factories.indexOf(factory));
-            buttons.forEach((b) -> {
-                b.setVisible(false);
-                b.setEnabled(false);
-            });
-
-            var tiles = factory.getTiles();
-            for(var tile : tiles){
-                int index = tiles.indexOf(tile);
-                var button = buttons.get(index);
-                Color color = Color.getColor(tile);
-                button.setEnabled(true);
-                button.setVisible(true);
+                columnIndex -= 1;
             }
         }
     }
 
-    public void wallClick(int line, int row){
-        System.out.println("Wall: " + line +";"+ row);
+    public void updateFloor(){
+        if(player == null){
+            return;
+        }
+
+        var floor = player.getFloor();
+        int index = 0;
+        for(var button : floorButtons){
+            if(index >= floor.size()){
+                if(button.isEnabled()){
+                    button.setEnabled(false);
+                    button.setBackground(Color.LIGHT_GRAY);
+                }
+            }
+            else{
+                var tile = floor.get(index);
+                var color = TileColor.valueOf(tile).getColor();
+                if(!button.isEnabled()){
+                    button.setEnabled(true);
+                }
+                if(button.getBackground() != color){
+                    button.setBackground(color);
+                }
+            }
+            index += 1;
+        }
+    }
+
+    public void updateCenter(){
+        if(center == null){
+            return;
+        }
+        int index = 0;
+        var centerTiles = center.getTiles();
+        for(var button : centerButtons){
+            if(index >= centerTiles.size()){
+                if(button.isEnabled()){
+                    button.setEnabled(false);
+                    button.setBackground(Color.LIGHT_GRAY);
+                }
+            }
+            else{
+                var tile = centerTiles.get(index);
+                Color color = TileColor.valueOf(tile).getColor();
+                if(color != button.getBackground()){
+                    button.setBackground(color);
+                }
+                if(!button.isEnabled()){
+                    button.setEnabled(true);
+                }
+            }
+            index += 1;
+        }
+    }
+
+    public void updateFactories(){
+        if(factories == null){
+            return;
+        }
+
+        for(var buttons : factoryButtons){
+            int factoryIndex = this.factoryButtons.indexOf(buttons);
+            var factory = factories.get(factoryIndex);
+            for(var button : buttons){
+                var tiles = factory.getTiles();
+                int tileIndex = buttons.indexOf(button);
+                if(tileIndex >= tiles.size()){
+                    if(button.isEnabled()){
+                        button.setEnabled(false);
+                        button.setBackground(Color.LIGHT_GRAY);
+                    }
+                    continue;
+                }
+                var tile = tiles.get(tileIndex);
+                if(!button.isEnabled()){
+                    button.setEnabled(true);
+                    button.setVisible(true);
+                    Color color = TileColor.valueOf(tile).getColor();
+                    button.setBackground(color);
+                }
+            }
+        }
     }
 
     public void patternLineClick(int line){
-        System.out.println("Pattern: " + line);
+        if(selectedColorName == null || selectedFactoryId == null){
+            return;
+        }
+        var pickForm = new PickForm();
+        pickForm.setColor(selectedColorName);
+        pickForm.setLineNumber(line);
+        pickForm.setPlayerName(playerName);
+        pickForm.setFactoryId(selectedFactoryId);
+
+        Code result;
+
+        if(centerSelected){
+            result = GameController.pickFromCenter(pickForm);
+        }
+        else {
+            result = GameController.pickFromFactory(pickForm);
+        }
+        if(result.getCode() != Code.SUCCESS.getCode()){
+            JOptionPane.showMessageDialog(null, result.getDescription(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        selectedColorName = null;
+        selectedFactoryId = null;
+        centerSelected = false;
     }
 
     public void factoryClick(int factoryId, int tileId){
-        System.out.println("Factory: " + factoryId +";"+ tileId);
+        if(factories == null){
+            return;
+        }
+        selectedFactoryId = factoryId;
+        var color = factories.get(factoryId).getTiles().get(tileId);
+        selectedColorName = color;
+    }
+
+    public void centerClick(int tileId){
+        if(center == null){
+            return;
+        }
+        centerSelected = true;
+        selectedFactoryId = tileId;
+        selectedColorName = center.getTiles().get(tileId);
     }
 }

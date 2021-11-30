@@ -5,6 +5,7 @@ import java.util.ArrayList;
 public class PlayerDto {
     private ArrayList<ArrayList<String>> wall;
     private ArrayList<ArrayList<String>> patternLines;
+    private ArrayList<String> floor;
     private int score;
     private int id;
     private String name;
@@ -17,6 +18,9 @@ public class PlayerDto {
         return patternLines;
     }
 
+    public ArrayList<String> getFloor() {
+        return floor;
+    }
     public int getScore() {
         return score;
     }
@@ -28,4 +32,5 @@ public class PlayerDto {
     public String getName() {
         return name;
     }
+
 }
