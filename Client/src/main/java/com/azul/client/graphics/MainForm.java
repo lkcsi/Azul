@@ -14,8 +14,10 @@ import java.util.stream.Collectors;
 public class MainForm extends JFrame{
 
     private static Dimension screen;
+    private GameController game = GameController.getInstance();
 
     public MainForm(){
+
         screen = Toolkit.getDefaultToolkit().getScreenSize();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -44,7 +46,11 @@ public class MainForm extends JFrame{
         join.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                var result = GameController.registerPlayer(name.getText());
+                if(!game.isConnected()){
+                    JOptionPane.showMessageDialog(null, "Not connected to server", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+
+                var result = game.registerPlayer(name.getText());
                 if(result.getCode() == Code.SUCCESS.getCode()){
                     var form = new WaitingForm(name.getText());
                     form.setVisible(true);
@@ -66,10 +72,16 @@ public class MainForm extends JFrame{
         connect.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                var game = GameController.getGame();
-                statusText.setText(game.getState());
+                game.connect("http://localhost:8080");
+                statusText.setText("Conneted: " + game.isConnected());
 
-                var players = GameController.getPlayers();
+                if(!game.isConnected()) {
+                    JOptionPane.showMessageDialog(null, "Cannot connect to server", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                game.update();
+                var players = game.getPlayers();
                 playersText.setText(String.join(", ", players.stream()
                         .map(t -> t.getName()).collect(Collectors.toList())));
             }

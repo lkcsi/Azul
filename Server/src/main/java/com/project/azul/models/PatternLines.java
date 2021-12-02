@@ -17,12 +17,6 @@ public class PatternLines {
         patternLines.add(new PatternLine(5));
     }
 
-    public boolean isAnyOption(TileColor color){
-        return patternLines.stream().anyMatch(line -> {
-            return line.getColor() == null || (line.getColor() == color && !line.isFull());
-        });
-    }
-
     public Code addTilesToLine(ArrayList<Tile> tiles, int lineNumber) {
         if(lineNumber < 0 || lineNumber > 4)
             return Code.PATTERN_LINE_DOES_NOT_EXIST;

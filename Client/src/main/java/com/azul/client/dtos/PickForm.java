@@ -5,6 +5,7 @@ public class PickForm {
     private int factoryId;
     private String color;
     private int lineNumber;
+    private boolean toFloor;
 
     public String getPlayerName() {
         return playerName;
@@ -36,5 +37,13 @@ public class PickForm {
 
     public void setLineNumber(int lineNumber) {
         this.lineNumber = lineNumber;
+    }
+
+    public boolean getToFloor() {
+        return toFloor;
+    }
+
+    public void setToFloor(boolean toFloor) {
+        this.toFloor = toFloor;
     }
 }

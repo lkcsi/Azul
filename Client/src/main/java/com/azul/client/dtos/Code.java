@@ -18,6 +18,9 @@ public class Code {
     public static Code GAME_NOT_STARTED = new Code(13, "Game not started");
     public static Code CENTER_IS_EMPTY = new Code(14, "Center is empty");
     public static Code INVALID_NUMBER_OF_PLAYERS = new Code(15, "Invalid number of players");
+    public static Code NO_FACTORY_SELECTED = new Code(100, "No factory selected");
+    public static Code NO_TILE_SELECTED = new Code(101, "No tile selected");
+    public static Code UNKNOWN = new Code(200, "Unkown error");
 
     private int code;
     private String description;

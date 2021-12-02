@@ -40,20 +40,19 @@ public class Wall {
 
         int result = 0;
         for(int i = tileIndex-1; i >= 0; i--) {
-            if(wall.get(lineNumber).get(i).isPlaced() != true)
+            if(!wall.get(lineNumber).get(i).isPlaced())
                 break;
             result += 1;
         }
         for(int i = tileIndex+1; i < line.size(); i++) {
-            if(wall.get(lineNumber).get(i).isPlaced() != true)
+            if(!wall.get(lineNumber).get(i).isPlaced())
                 break;
             result += 1;
         }
 
         if(result != 0)
-            result += 1;
-
-        return result;
+            return result + 1;
+        return 0;
     }
 
     public int getColumnCount(int lineNumber, TileColor color){
@@ -63,18 +62,19 @@ public class Wall {
 
         int result = 0;
         for(int j = lineNumber -1 ; j >= 0; j --){
-            if(wall.get(lineNumber).get(tileIndex).isPlaced() != true)
+            if(!wall.get(j).get(tileIndex).isPlaced())
                 break;
+            result += 1;
         }
         for(int j = lineNumber + 1; j < wall.size(); j ++){
-            if(wall.get(lineNumber).get(tileIndex).isPlaced() != true)
+            if(!wall.get(j).get(tileIndex).isPlaced())
                 break;
+            result += 1;
         }
 
         if(result != 0)
-            result += 1;
-
-        return result;
+            return result + 1;
+        return 0;
     }
 
     public boolean isComplete(){
@@ -99,6 +99,41 @@ public class Wall {
         var result = new Wall();
         result.wall = new ArrayList<ArrayList<TilePlace>>(wall);
         return result;
+    }
+
+    public int getColorCompleted() {
+        int result = isColorCompleted(TileColor.WHITE) ? 1 : 0;
+        result += isColorCompleted(TileColor.BLACK) ? 1 : 0;
+        result += isColorCompleted(TileColor.RED) ? 1 : 0;
+        result += isColorCompleted(TileColor.BLUE) ? 1 : 0;
+        result += isColorCompleted(TileColor.YELLOW) ? 1 : 0;
+        return result;
+    }
+
+    private boolean isColorCompleted(TileColor color){
+        for(var line : wall){
+            if(!line.stream().anyMatch(t -> t.isPlaced() && t.getColor() == color))
+                return false;
+        }
+        return true;
+    }
+
+    public int getColumnCompleted() {
+        int result = 0;
+        for(int i = 0 ; i < 5; i++){
+            for(int j = 0; j < 5; j++){
+                if(!wall.get(j).get(i).isPlaced())
+                    break;
+            }
+            result++;
+        }
+        return result;
+    }
+
+    public int getLineCompleted() {
+        return (int) wall.stream()
+                .filter(line -> line.stream().allMatch(t-> t.isPlaced()))
+                .count();
     }
 
     class TilePlace{

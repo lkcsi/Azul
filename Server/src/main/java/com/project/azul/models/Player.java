@@ -40,6 +40,7 @@ public class Player {
               countScore(line, tile);
           }
        }
+       countDiscount();
        return remainder;
     }
 
@@ -52,18 +53,25 @@ public class Player {
        else
            score += (row + column);
 
-       switch (floor.getTiles().size()){
-           case 0: break;
-           case 1: score -= 1; break;
-           case 2: score -= 2; break;
-           case 3: score -= 4; break;
-           case 4: score -= 6; break;
-           case 5: score -= 8; break;
-           case 6: score -= 11; break;
-           case 7: score -= 14; break;
-       }
+    }
 
-       line.clear();
+    public void countDiscount(){
+        switch (floor.getTiles().size()){
+            case 0: break;
+            case 1: score -= 1; break;
+            case 2: score -= 2; break;
+            case 3: score -= 4; break;
+            case 4: score -= 6; break;
+            case 5: score -= 8; break;
+            case 6: score -= 11; break;
+            default: score -= 14; break;
+        }
+    }
+
+    public void countBonusScore(){
+        score += (wall.getColorCompleted() * 10);
+        score += (wall.getLineCompleted() * 2);
+        score += (wall.getColumnCompleted() * 7);
     }
 
     public PatternLines getPatternLines(){

@@ -17,6 +17,10 @@ public class GameController {
     {
     }
 
+    public Game getGame(){
+        return game;
+    }
+
     @PostMapping(path = "/game/new/{number}")
     public Code newGame(@PathVariable("number") int numberOfPlayers){
         if(numberOfPlayers < 2 || numberOfPlayers > 4)
@@ -31,7 +35,8 @@ public class GameController {
        var result = game.pickFromFactory(pickForm.getPlayerName(),
                pickForm.getFactoryId(),
                pickForm.getLineNumber(),
-               pickForm.getColor());
+               pickForm.getColor(),
+               pickForm.isToFloor());
 
        if(result!=Code.SUCCESS)
            game = backup;
@@ -44,7 +49,8 @@ public class GameController {
         var backup = game.clone();
         var result = game.pickFromCenter(pickForm.getPlayerName(),
                 pickForm.getLineNumber(),
-                pickForm.getColor());
+                pickForm.getColor(),
+                pickForm.isToFloor());
 
         if(result!=Code.SUCCESS)
             game = backup;
@@ -58,13 +64,21 @@ public class GameController {
     }
 
     @GetMapping(path = "/game")
-    public GameDto getGame(){
+    public GameDto getGameDto(){
         return new GameDto(game);
     }
 
     @GetMapping(path = "/players")
     public Collection<PlayerDto> getPlayers(){
         return game.getPlayers().stream().map(p -> new PlayerDto(p)).collect(Collectors.toList());
+    }
+    @GetMapping(path = "/bag")
+    public TileCollectionDto getBag(){
+        return new TileCollectionDto(game.getBag());
+    }
+    @GetMapping(path = "/drop")
+    public TileCollectionDto getDrop(){
+        return new TileCollectionDto(game.getDrop());
     }
     @PostMapping(path = "/players")
     public Code addPlayers(@RequestBody Collection<String> names){

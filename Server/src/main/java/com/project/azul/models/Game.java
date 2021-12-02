@@ -20,7 +20,7 @@ public class Game {
         this.numberOfPlayers = numberOfPlayers;
         state = State.WAITING_FOR_PLAYERS;
         createFactories(numberOfPlayers);
-        createTiles();
+        initBag();
         fillFactories();
     }
 
@@ -76,7 +76,7 @@ public class Game {
         drop.clear();
     }
 
-    private void createTiles()
+    public void initBag()
     {
         bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(TileColor.BLACK))));
         bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(TileColor.RED))));
@@ -104,7 +104,8 @@ public class Game {
         return Code.SUCCESS;
     }
 
-    private Code pick(String playerName, Factory factory, int lineNumber, String colorName){
+
+    private Code pick(String playerName, Factory factory, int lineNumber, String colorName, boolean toFloor){
 
         var currentPlayer = getCurrentPlayer();
         if(!playerName.equalsIgnoreCase(currentPlayer.getName()))
@@ -118,34 +119,31 @@ public class Game {
         if(pickedFromFactoryTiles.size() == 0)
             return Code.COLOR_NOT_FOUND_IN_FACTORY;
 
-        if(!currentPlayer.getPatternLines().isAnyOption(color)){
+        if(toFloor){
             currentPlayer.getFloor().addTiles(pickedFromFactoryTiles);
         }
-
         else{
             var result = currentPlayer.addTilesToLine(pickedFromFactoryTiles, lineNumber);
             if(result != Code.SUCCESS)
                 return result;
         }
 
-        bag.addTiles(pickedFromFactoryTiles);
-
+        drop.addTiles(pickedFromFactoryTiles);
         if(factory != center) {
             center.addTiles(factory.removeTiles());
         }
-
         checkGameState();
         return Code.SUCCESS;
     }
 
-    public Code pickFromCenter(String playerName, int lineNumber, String colorName){
+    public Code pickFromCenter(String playerName, int lineNumber, String colorName, boolean toFloor){
         if(state != State.READY)
             return Code.GAME_NOT_STARTED;
 
-        return pick(playerName, center, lineNumber, colorName);
+        return pick(playerName, center, lineNumber, colorName, toFloor);
     }
 
-    public Code pickFromFactory(String playerName, int factoryId, int lineNumber, String colorName)
+    public Code pickFromFactory(String playerName, int factoryId, int lineNumber, String colorName, boolean toFloor)
     {
         if(state != State.READY)
             return Code.GAME_NOT_STARTED;
@@ -154,7 +152,7 @@ public class Game {
         if(!factory.isPresent())
             return Code.FACTORY_DOES_NOT_EXIST;
 
-        return pick(playerName, factory.get(), lineNumber, colorName);
+        return pick(playerName, factory.get(), lineNumber, colorName, toFloor);
     }
 
     private void checkGameState() {
@@ -165,7 +163,7 @@ public class Game {
                 state = State.FINISHED;
                 return;
             }
-            players.forEach(p -> bag.addTiles(p.getFloor().removeTiles()));
+            players.forEach(p -> drop.addTiles(p.getFloor().removeTiles()));
             fillFactories();
             currentPlayerId = players.get(0).getId();
             return;
@@ -178,7 +176,10 @@ public class Game {
     }
 
     private void calculateScore() {
-        players.stream().forEach(p -> p.wallTiling());
+        players.stream().forEach((p) -> {
+            drop.addTiles(p.wallTiling());
+            drop.addTiles(p.getFloor().removeTiles());
+        });
     }
 
     private void nextPlayer()
@@ -219,5 +220,9 @@ public class Game {
 
     public Factory getCenter() {
         return center;
+    }
+
+    public TileCollection getDrop() {
+        return drop;
     }
 }

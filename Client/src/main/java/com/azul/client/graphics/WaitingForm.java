@@ -12,6 +12,7 @@ public class WaitingForm extends JFrame {
     JLabel playersLabel = new JLabel("Players");
     JTextField namesText = new JTextField();
     private String playerName;
+    GameController game = GameController.getInstance();
 
     public WaitingForm(String playerName) {
         this.playerName = playerName;
@@ -42,7 +43,6 @@ public class WaitingForm extends JFrame {
 
         Thread thread = new Thread(startWaiting());
         thread.start();
-        //startWaiting().run();
     }
 
     public Runnable startWaiting(){
@@ -51,19 +51,20 @@ public class WaitingForm extends JFrame {
             public void run() {
                 while (true) {
                     try {
-                        var players = GameController.getPlayers();
+                        Thread.sleep(2000);
+                        game.update();
+
+                        var players = game.getPlayers();
                         namesText.setText(String.join(", ", players.stream()
                                 .map(t -> t.getName()).collect(Collectors.toList())));
 
-                        var game = GameController.getGame();
-                        if (game.getState().equalsIgnoreCase("READY")){
-                            var gameForm = new GameForm(playerName, players.size());
+                        if (game.getStatus().equalsIgnoreCase("READY")){
+                            var gameForm = new GameForm();
                             gameForm.setVisible(true);
 
                             setVisible(false);
                             return;
                         }
-                        Thread.sleep(2000);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
