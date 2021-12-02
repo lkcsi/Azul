@@ -6,8 +6,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Game {
-    private ArrayList<Player> players = new ArrayList<Player>();
-    private ArrayList<Factory> factories = new ArrayList<Factory>();
+    private ArrayList<Player> players = new ArrayList<>();
+    private ArrayList<Factory> factories = new ArrayList<>();
     private TileCollection bag = new TileCollection();
     private TileCollection drop = new TileCollection();
     private Factory center = new Factory(10);
@@ -78,11 +78,19 @@ public class Game {
 
     public void initBag()
     {
-        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(TileColor.BLACK))));
-        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(TileColor.RED))));
-        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(TileColor.BLUE))));
-        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(TileColor.WHITE))));
-        bag.addTiles(new ArrayList<Tile>(Collections.nCopies(20, new Tile(TileColor.YELLOW))));
+        bag.addTiles(createTiles(TileColor.BLACK));
+        bag.addTiles(createTiles(TileColor.RED));
+        bag.addTiles(createTiles(TileColor.BLUE));
+        bag.addTiles(createTiles(TileColor.WHITE));
+        bag.addTiles(createTiles(TileColor.YELLOW));
+    }
+
+    private ArrayList<Tile> createTiles(TileColor color){
+        var tiles = new ArrayList<Tile>();
+        for(int i = 0; i < 20; i++){
+            tiles.add(new Tile(color));
+        }
+        return tiles;
     }
 
     public Code registerPlayer(String name)
@@ -164,8 +172,8 @@ public class Game {
                 return;
             }
             players.forEach(p -> drop.addTiles(p.getFloor().removeTiles()));
-            fillFactories();
             currentPlayerId = players.get(0).getId();
+            fillFactories();
             return;
         }
         nextPlayer();

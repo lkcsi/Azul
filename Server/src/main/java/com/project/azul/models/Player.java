@@ -100,6 +100,9 @@ public class Player {
     }
 
     public void countBonus() {
+        score += wall.getColorCompleted();
+        score += wall.getColumnCompleted();
+        score += wall.getLineCompleted();
     }
 
     public Player clone(){
