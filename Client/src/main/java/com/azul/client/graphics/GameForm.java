@@ -9,7 +9,8 @@ import java.util.ArrayList;
 public class GameForm extends JFrame {
 
     GameController game = GameController.getInstance();
-    private ArrayList<Updatable> updatables = new ArrayList<>();
+    private boolean over = false;
+    private final ArrayList<Updatable> updatables = new ArrayList<>();
 
     private final Dimension tileSize;
 
@@ -69,14 +70,6 @@ public class GameForm extends JFrame {
         updatables.add(center);
         add(center, c);
 
-        BagForm bag = new BagForm(tileSize, game.getBag());
-        bag.setVisible(true);
-        updatables.add(bag);
-
-        BagForm drop = new BagForm(tileSize, game.getDrop());
-        drop.setVisible(true);
-        updatables.add(drop);
-
         Thread t = new Thread(update());
         t.start();
     }
@@ -85,17 +78,23 @@ public class GameForm extends JFrame {
         return new Runnable() {
             @Override
             public void run() {
-                while(true){
+                while(!over){
                     try {
                         Thread.sleep(1000);
                         game.update();
                         updatables.forEach(panel -> panel.update());
+                        if(game.getStatus().equalsIgnoreCase("finished")) {
+                            over = true;
+                        }
                     } catch (InterruptedException e) {
                         System.out.println("Could not update");
                     }
                 }
+                JOptionPane.showMessageDialog(null, "Game is over", "Info", JOptionPane.INFORMATION_MESSAGE);
             }
         };
     }
+
+
 
 }

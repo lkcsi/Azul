@@ -59,10 +59,7 @@ public class WaitingForm extends JFrame {
                                 .map(t -> t.getName()).collect(Collectors.toList())));
 
                         if (game.getStatus().equalsIgnoreCase("READY")){
-                            var gameForm = new GameForm();
-                            gameForm.setVisible(true);
-
-                            setVisible(false);
+                            startGame();
                             return;
                         }
                     } catch (Exception e) {
@@ -71,5 +68,10 @@ public class WaitingForm extends JFrame {
                 }
             }
         };
+    }
+    public void startGame(){
+        var gameForm = new GameForm();
+        gameForm.setVisible(true);
+        setVisible(false);
     }
 }

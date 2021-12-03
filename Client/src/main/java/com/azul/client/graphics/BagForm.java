@@ -11,7 +11,6 @@ import java.util.ArrayList;
 public class BagForm extends JFrame implements Updatable {
     GameController game = GameController.getInstance();
     ArrayList<JButton> bagButtons = new ArrayList<>();
-    private int lastSize = 100;
     private TileCollectionDto tilesDto;
 
     public BagForm(Dimension tileSize, TileCollectionDto tilesDto){
@@ -38,8 +37,7 @@ public class BagForm extends JFrame implements Updatable {
             return;
         }
         var bagTiles = tilesDto.getTiles();
-        int limit = lastSize < bagTiles.size() ? bagTiles.size() : lastSize;
-        for(int i = 0; i < limit; i++){
+        for(int i = 0; i < 100; i++){
             var button = bagButtons.get(i);
             if(i < bagTiles.size()) {
                 var tile = bagTiles.get(i);
@@ -49,8 +47,9 @@ public class BagForm extends JFrame implements Updatable {
                 }
                 continue;
             }
-            button.setBackground(Color.LIGHT_GRAY);
+            if(button.getBackground() != Color.LIGHT_GRAY){
+                button.setBackground(Color.LIGHT_GRAY);
+            }
         }
-        lastSize = game.getBag().getTiles().size();
     }
 }
