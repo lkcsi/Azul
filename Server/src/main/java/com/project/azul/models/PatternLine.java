@@ -1,7 +1,5 @@
 package com.project.azul.models;
 
-import com.project.azul.api.Code;
-
 import java.util.ArrayList;
 
 public class PatternLine extends TileCollection{
@@ -14,22 +12,18 @@ public class PatternLine extends TileCollection{
         this.lineNumber = capacity -1;
     }
 
-    @Override
-    public Code addTiles(ArrayList<Tile> tilesToAdd) {
+    public void addTiles(ArrayList<Tile> tilesToAdd) {
         if (isFull())
-            return Code.PATTERN_LINE_IS_FULL;
+            throw new RuntimeException("Pattern line is full");
 
         var color = getColor();
-
         if (color != null && color != tilesToAdd.get(0).getColor()){
-            return Code.PATTERN_LINE_COLOR_MISMATCH;
+            throw new RuntimeException("Pattern line color mismatch");
         }
-        while(capacity - size() != 0 && tilesToAdd.size() > 0){
+        while(!isFull() && tilesToAdd.size() > 0){
             var tile = tilesToAdd.remove(0);
             addTile(tile);
         }
-
-        return Code.SUCCESS;
     }
 
     public TileColor getColor() {
@@ -50,9 +44,10 @@ public class PatternLine extends TileCollection{
     public boolean isFull(){
         return capacity == size();
     }
+
     public PatternLine clone(){
         var result = new PatternLine(capacity);
-        result.addTiles(getTiles());
+        getTiles().forEach(t -> result.addTile(new Tile(getColor())));
         return result;
     }
 }

@@ -1,8 +1,7 @@
 package com.project.azul.models;
 
-import com.project.azul.api.Code;
-
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class TileCollection {
@@ -12,15 +11,12 @@ public class TileCollection {
         tiles = new ArrayList<Tile>();
     }
 
-    public Code addTile(Tile tile){
+    public void addTile(Tile tile){
         tiles.add(tile);
-        return Code.SUCCESS;
     }
 
-    public Code addTiles(ArrayList<Tile> tilesToAdd){
+    public void addTiles(List<Tile> tilesToAdd) {
         tiles.addAll(tilesToAdd);
-        tilesToAdd.clear();
-        return Code.SUCCESS;
     }
 
     public ArrayList<Tile> getTiles(){
@@ -61,7 +57,7 @@ public class TileCollection {
 
     public TileCollection clone(){
         var result = new TileCollection();
-        result.tiles = new ArrayList<Tile>(tiles);
+        tiles.forEach(t -> result.addTile(new Tile(t.getColor())));
         return result;
     }
 }

@@ -12,6 +12,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.UUID;
 
 public class GameController {
 
@@ -38,28 +39,54 @@ public class GameController {
 
     private String baseUrl;
     private boolean connected;
+    private UUID gameId;
 
-    public boolean connect(String url){
-        baseUrl = url + "/api";
-        connected = true;
-        if(updateGame() == null) {
+    public void createGame(String url, String playerName, int players){
+        try{
+            baseUrl = url + "/api";
+            game = newGame(players);
+            gameId = game.getId();
+            player = registerPlayer(playerName);
+            this.playerName = playerName;
+            connected = true;
+        }catch (Exception e){
             connected = false;
+            throw e;
         }
-        return connected;
     }
 
-    public Code registerPlayer(String playerName) {
-        this.playerName = playerName;
-        String result = request("players/new/" + playerName,
+    public void joinGame(String url, String playerName, UUID gameId){
+        try{
+            baseUrl = url + "/api";
+            this.gameId = gameId;
+            this.playerName = playerName;
+            player = registerPlayer(playerName);
+            connected = true;
+        }catch (Exception e){
+            connected = false;
+            throw e;
+        }
+    }
+
+    public GameDto newGame(int players) {
+        String result = request("game/?players=" + players,
                 "",
                 "POST");
 
-        System.out.println("Result: " + result);
-        return new Gson().fromJson(result, Code.class);
+        return new Gson().fromJson(result, GameDto.class);
+    }
+
+    public PlayerDto registerPlayer(String playerName) {
+        this.playerName = playerName;
+        String result = request("player/?gameId=" + gameId + "&name="+ playerName,
+                "",
+                "POST");
+
+        return new Gson().fromJson(result, PlayerDto.class);
     }
 
     private ArrayList<PlayerDto> updatePlayers(){
-        String result = request("players",
+        String result = request("players/?gameId=" + gameId,
                 "",
                 "GET");
 
@@ -67,67 +94,38 @@ public class GameController {
     }
 
     private ArrayList<FactoryDto> updateFactories(){
-        String result = request("factories",
+        String result = request("factories/?gameId=" + gameId,
                 "",
                 "GET");
 
         return new ArrayList<FactoryDto>(Arrays.asList(new Gson().fromJson(result, FactoryDto[].class)));
     }
     private FactoryDto updateCenter(){
-        try{
-            String result = request("center", "", "GET");
-            return new Gson().fromJson(result, FactoryDto.class);
-        }
-        catch (Exception ex){
-            return null;
-        }
+        String result = request("center/?gameId=" + gameId, "", "GET");
+        return new Gson().fromJson(result, FactoryDto.class);
     }
     private TileCollectionDto updateDrop(){
-        try{
-            String result = request("drop", "", "GET");
-            return new Gson().fromJson(result, TileCollectionDto.class);
-        }
-        catch (Exception ex){
-            return null;
-        }
+        String result = request("drop/?gameId=" + gameId, "", "GET");
+        return new Gson().fromJson(result, TileCollectionDto.class);
     }
     private TileCollectionDto updateBag(){
-        try{
-            String result = request("bag", "", "GET");
-            return new Gson().fromJson(result, TileCollectionDto.class);
-        }
-        catch (Exception ex){
-            return null;
-        }
+        String result = request("bag/?gameId=" + gameId, "", "GET");
+        return new Gson().fromJson(result, TileCollectionDto.class);
     }
     private GameDto updateGame(){
-        try {
-            String result = request("game", "", "GET");
-            return new Gson().fromJson(result, GameDto.class);
-        }
-        catch (Exception e){
-            return null;
-        }
+        String result = request("game/?gameId=" + gameId, "", "GET");
+        return new Gson().fromJson(result, GameDto.class);
     }
 
-    public Code pickFromFactory(PickForm form){
-        try{
-            String result = request("factories/pick", new Gson().toJson(form), "POST");
-            return new Gson().fromJson(result, Code.class);
-        }
-        catch (Exception ex){
-            return Code.UNKNOWN;
-        }
+    public String pickFromFactory(PickForm form){
+        String result = request("factory-pick/?gameId=" + gameId, new Gson().toJson(form), "POST");
+        System.out.println(result);
+        return result;
     }
 
-    public Code pickFromCenter(PickForm form){
-        try {
-            String result = request("center/pick", new Gson().toJson(form), "POST");
-            return new Gson().fromJson(result, Code.class);
-        }
-        catch (Exception ex){
-            return Code.UNKNOWN;
-        }
+    public String pickFromCenter(PickForm form){
+        String result = request("center-pick/?gameId=" + gameId, new Gson().toJson(form), "POST");
+        return result;
     }
 
     private String request(String urlString, String jsonInputString, String requestMethod){
@@ -147,9 +145,14 @@ public class GameController {
                     }
                 }
 
+                InputStreamReader reader;
+                if(con.getResponseCode() < HttpURLConnection.HTTP_BAD_REQUEST)
+                    reader = new InputStreamReader(con.getInputStream());
+                else
+                    reader = new InputStreamReader(con.getErrorStream());
+
                 //Read
-                try(BufferedReader br = new BufferedReader(
-                        new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))){
+                try(BufferedReader br = new BufferedReader(reader)){
                     StringBuilder response = new StringBuilder();
                     String responseLine = null;
                     while((responseLine = br.readLine()) != null){
@@ -158,14 +161,12 @@ public class GameController {
                    return response.toString();
                 }
             } catch (Exception e) {
-                return "";
+                System.out.println(e.getMessage());
+                return e.getMessage();
             }
     }
 
     public void update(){
-        if(!connected)
-            return;
-
         try{
             game = updateGame();
             players = updatePlayers();
@@ -173,24 +174,28 @@ public class GameController {
             center = updateCenter();
             drop = updateDrop();
             bag = updateBag();
+
             currentPlayer = players.stream()
-                    .filter(p -> p.getName().equalsIgnoreCase(game.getCurrentPlayer())) .findFirst() .get();
+                    .filter(p -> p.getName().equalsIgnoreCase(game.getCurrentPlayer()))
+                    .findFirst()
+                    .get();
 
             if(playerName!=null){
                 player = players.stream()
-                        .filter(p -> p.getName().equalsIgnoreCase(playerName)) .findFirst() .get();
+                        .filter(p -> p.getName().equalsIgnoreCase(playerName))
+                        .findFirst()
+                        .get();
             }
-
-            } catch (Exception e) {
-                System.out.println("ERROR: " + e.getMessage());
-            }
+        } catch (Exception e) {
+            System.out.println("Update error: " + e.getMessage());
+        }
     }
 
-    public Code sendPick(int line, boolean toFloor){
+    public ErrorMessage sendPick(int line, boolean toFloor){
         if(selectedColorName == null ){
-            return Code.NO_TILE_SELECTED;
+            throw new RuntimeException("No tile selected");
         }if(selectedFactoryId == null){
-            return Code.NO_FACTORY_SELECTED;
+            throw new RuntimeException("No factory selected");
         }
 
         var pickForm = new PickForm();
@@ -200,20 +205,18 @@ public class GameController {
         pickForm.setFactoryId(selectedFactoryId);
         pickForm.setToFloor(toFloor);
 
-        Code result;
-
-        if(centerSelected){
-            result = pickFromCenter(pickForm);
-        }
-        else {
-            result = pickFromFactory(pickForm);
-        }
+        String result;
+        if(centerSelected){ result = pickFromCenter(pickForm); }
+        else { result = pickFromFactory(pickForm); }
 
         selectedColorName = null;
         selectedFactoryId = null;
         centerSelected = false;
 
-        return result;
+        if(result.isEmpty())
+            return null;
+
+        return new Gson().fromJson(result, ErrorMessage.class);
     }
 
     public ArrayList<FactoryDto> getFactories() {
@@ -263,8 +266,8 @@ public class GameController {
         return connected;
     }
 
-    public String getStatus(){
-        return game.getState();
+    public GameDto getGame(){
+        return game;
     }
 
     public TileCollectionDto getBag() {

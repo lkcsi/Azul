@@ -1,7 +1,5 @@
 package com.project.azul.models;
 
-import com.project.azul.api.Code;
-
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
@@ -20,7 +18,7 @@ public class Floor extends TileCollection{
 
     public Floor clone(){
         var result = new Floor();
-        result.addTiles(getTiles());
+        getTiles().forEach(t -> result.addTile(new Tile(t.getColor())));
         return result;
     }
 }

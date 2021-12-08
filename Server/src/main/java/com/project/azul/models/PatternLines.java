@@ -1,7 +1,5 @@
 package com.project.azul.models;
 
-import com.project.azul.api.Code;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -17,12 +15,12 @@ public class PatternLines {
         patternLines.add(new PatternLine(5));
     }
 
-    public Code addTilesToLine(ArrayList<Tile> tiles, int lineNumber) {
+    public void addTilesToLine(ArrayList<Tile> tiles, int lineNumber) {
         if(lineNumber < 0 || lineNumber > 4)
-            return Code.PATTERN_LINE_DOES_NOT_EXIST;
+            throw new RuntimeException("Pattern line does not exist");
 
         var line = patternLines.get(lineNumber);
-        return line.addTiles(tiles);
+        line.addTiles(tiles);
     }
 
     public ArrayList<ArrayList<String>> getString(){
@@ -41,7 +39,9 @@ public class PatternLines {
 
     public PatternLines clone(){
         var result = new PatternLines();
-        result.patternLines = patternLines.stream().map(p -> p.clone()).collect(Collectors.toCollection(ArrayList::new));
+        result.patternLines = patternLines.stream()
+                .map(p -> p.clone())
+                .collect(Collectors.toCollection(ArrayList::new));
 
         return result;
     }

@@ -14,7 +14,7 @@ public class Factory extends TileCollection{
 
     public Factory clone(){
         var factory = new Factory(id);
-        factory.addTiles(getTiles());
+        getTiles().forEach(t -> factory.addTile(new Tile(t.getColor())));
         return factory;
     }
 }

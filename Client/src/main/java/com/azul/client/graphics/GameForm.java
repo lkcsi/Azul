@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class GameForm extends JFrame {
 
-    GameController game = GameController.getInstance();
+    GameController gameController = GameController.getInstance();
     private boolean over = false;
     private final ArrayList<Updatable> updatables = new ArrayList<>();
 
@@ -81,9 +81,11 @@ public class GameForm extends JFrame {
                 while(!over){
                     try {
                         Thread.sleep(1000);
-                        game.update();
+                        gameController.update();
+                        var game = gameController.getGame();
+
                         updatables.forEach(panel -> panel.update());
-                        if(game.getStatus().equalsIgnoreCase("finished")) {
+                        if(game.getState().equalsIgnoreCase("finished")) {
                             over = true;
                         }
                     } catch (InterruptedException e) {

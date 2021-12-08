@@ -1,102 +1,87 @@
 package com.project.azul.controllers;
 
-import com.project.azul.api.Code;
 import com.project.azul.dto.*;
 import com.project.azul.models.*;
+import com.project.azul.services.GameService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api")
 public class GameController {
-    private Game game;
 
-    public GameController()
-    {
+    private GameService gameService;
+
+    @Autowired
+    public GameController(GameService gameService) {
+        this.gameService = gameService;
     }
 
-    public Game getGame(){
-        return game;
+    @PostMapping(path = "/game")
+    public GameDto newGame(@RequestParam("players") int players) throws Exception {
+        return gameService.newGame(players);
     }
 
-    @PostMapping(path = "/game/new/{number}")
-    public Code newGame(@PathVariable("number") int numberOfPlayers){
-        if(numberOfPlayers < 2 || numberOfPlayers > 4)
-            return Code.INVALID_NUMBER_OF_PLAYERS;
-        game = new Game(numberOfPlayers);
-        return Code.SUCCESS;
+    @PostMapping(path = "/factory-pick")
+    public void pickFromFactory(@RequestParam UUID gameId, @RequestBody PickForm pickForm) throws Exception {
+        gameService.pickFromFactory(gameId, pickForm);
     }
 
-    @PostMapping(path = "/factories/pick")
-    public Code pickFromFactory(@RequestBody PickForm pickForm){
-       var backup = game.clone();
-       var result = game.pickFromFactory(pickForm.getPlayerName(),
-               pickForm.getFactoryId(),
-               pickForm.getLineNumber(),
-               pickForm.getColor(),
-               pickForm.isToFloor());
-
-       if(result!=Code.SUCCESS)
-           game = backup;
-
-       return result;
+    @PostMapping(path = "/center-pick")
+    public void pickFromCenter(@RequestParam UUID gameId, @RequestBody PickForm pickForm) throws Exception {
+        gameService.pickFromCenter(gameId, pickForm);
     }
 
-    @PostMapping(path = "/center/pick")
-    public Code pickFromCenter(@RequestBody PickForm pickForm){
-        var backup = game.clone();
-        var result = game.pickFromCenter(pickForm.getPlayerName(),
-                pickForm.getLineNumber(),
-                pickForm.getColor(),
-                pickForm.isToFloor());
-
-        if(result!=Code.SUCCESS)
-            game = backup;
-
-        return result;
-    }
-
-    @PostMapping(path = "/players/new/{name}")
-    public Code addPlayer(@PathVariable("name") String playerName){
-        return game.registerPlayer(playerName);
-    }
 
     @GetMapping(path = "/game")
-    public GameDto getGameDto(){
-        return new GameDto(game);
+    public GameDto getGameDto(@RequestParam("gameId") UUID gameId){
+        return new GameDto(gameService.getGame(gameId));
     }
 
-    @GetMapping(path = "/players")
-    public Collection<PlayerDto> getPlayers(){
-        return game.getPlayers().stream().map(p -> new PlayerDto(p)).collect(Collectors.toList());
-    }
     @GetMapping(path = "/bag")
-    public TileCollectionDto getBag(){
-        return new TileCollectionDto(game.getBag());
+    public TileCollectionDto getBag(@RequestParam("gameId") UUID gameId){
+        return new TileCollectionDto(gameService.getBag(gameId));
     }
     @GetMapping(path = "/drop")
-    public TileCollectionDto getDrop(){
-        return new TileCollectionDto(game.getDrop());
-    }
-    @PostMapping(path = "/players")
-    public Code addPlayers(@RequestBody Collection<String> names){
-        for(var name : names){
-            var result = game.registerPlayer(name);
-            if(result != Code.SUCCESS)
-                return result;
-        }
-        return Code.SUCCESS;
+    public TileCollectionDto getDrop(@RequestParam("gameId") UUID gameId){
+        return new TileCollectionDto(gameService.getDrop(gameId));
     }
 
     @GetMapping(path = "/factories")
-    public Collection<FactoryDto> getFactories(){
-        return game.getFactories().stream().map(p -> new FactoryDto(p)).collect(Collectors.toList());
+    public Collection<FactoryDto> getFactories(@RequestParam UUID gameId){
+        return gameService.getFactories(gameId)
+                .stream()
+                .map(p -> new FactoryDto(p))
+                .collect(Collectors.toList());
     }
 
     @GetMapping(path = "/center")
-    public FactoryDto getCenter(){
-        return new FactoryDto(game.getCenter());
+    public FactoryDto getCenter(@RequestParam("gameId") UUID gameId){
+        return new FactoryDto(gameService.getCenter(gameId));
+    }
+
+    @PostMapping(path = "/player")
+    public PlayerDto addPlayer(@RequestParam("gameId") UUID gameId,
+                               @RequestParam("name") String playerName) throws Exception {
+        return gameService.addPlayer(gameId, playerName);
+    }
+    @GetMapping(path = "/player")
+    public PlayerDto getPlayer(@RequestParam("gameId") UUID gameId,
+                               @RequestParam("name") String playerName) throws Exception {
+        var player = gameService
+                .getPlayer(gameId, playerName);
+
+        return new PlayerDto(player);
+    }
+    @GetMapping(path = "/players")
+    public Collection<PlayerDto> getPlayers(@RequestParam("gameId") UUID gameId){
+        return gameService.getPlayers(gameId)
+                .stream()
+                .map(p -> new PlayerDto(p))
+                .collect(Collectors.toList());
     }
 }

@@ -1,7 +1,5 @@
 package com.project.azul.models;
 
-import com.project.azul.api.Code;
-
 import java.util.ArrayList;
 
 public class Player {
@@ -10,23 +8,21 @@ public class Player {
     private Floor floor = new Floor();
     private PatternLines patternLines = new PatternLines();
 
-
     private int score = 0;
     private final int id;
     private final String name;
 
     public Player(int id, String name) {
        this.id = id;
-        this.name = name;
+       this.name = name;
     }
 
-    public Code addTilesToLine(ArrayList<Tile> tiles, int lineNumber) {
+    public void addTilesToLine(ArrayList<Tile> tiles, int lineNumber) {
         if(wall.isPlaced(lineNumber, tiles.get(0).getColor())){
-            return Code.COLOR_IS_FILLED_IN_WALL;
+            throw new RuntimeException("Color is filled in wall");
         }
-        var result = patternLines.addTilesToLine(tiles, lineNumber);
+        patternLines.addTilesToLine(tiles, lineNumber);
         floor.addTiles(tiles);
-        return result;
     }
 
     public ArrayList<Tile> wallTiling(){
@@ -77,7 +73,6 @@ public class Player {
     public PatternLines getPatternLines(){
         return patternLines;
     }
-
 
     public int getScore() {
         return score;

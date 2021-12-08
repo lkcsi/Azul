@@ -1,7 +1,6 @@
 package com.azul.client.graphics;
 
 import com.azul.client.controllers.GameController;
-import com.azul.client.dtos.Code;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,12 +8,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class MainForm extends JFrame{
 
     private static Dimension screen;
-    private GameController game = GameController.getInstance();
+    private GameController gameController = GameController.getInstance();
 
     public MainForm(){
 
@@ -25,36 +25,25 @@ public class MainForm extends JFrame{
         setSize((int)(screen.width / 4), (int)(screen.height / 6));
         setLocation(screen.width / 2 - getWidth() / 2, screen.height / 2 - getHeight() / 2);
 
-        JLabel statusLabel = new JLabel("Status: ");
-        JTextField statusText = new JTextField("Unknown");
-        statusText.setEnabled(false);
+        JTextField nameText = new JTextField("Vazul");
 
-        JLabel playersLabel = new JLabel("Players: ");
-        JTextField playersText = new JTextField("Unknown");
-        playersText.setEnabled(false);
+        JTextField urlText = new JTextField("http://localhost:8080");
 
-        JTextField name = new JTextField("Name");
-        name.setHorizontalAlignment(SwingConstants.CENTER);
-        name.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                name.setText("");
-            }
-        });
+        JTextField joinIdText = new JTextField("");
 
-        Button join = new Button("Join Game");
-        join.addActionListener(new ActionListener() {
+        JButton joinButton = new JButton("Join Game");
+        joinButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                if(!game.isConnected()){
-                    JOptionPane.showMessageDialog(null, "Not connected to server", "Error", JOptionPane.ERROR_MESSAGE);
-                }
 
-                var result = game.registerPlayer(name.getText());
-                if(result.getCode() == Code.SUCCESS.getCode()){
-                    var form = new WaitingForm(name.getText());
-                    form.setVisible(true);
+                try{
+                    gameController.joinGame(urlText.getText(), nameText.getText(), UUID.fromString(joinIdText.getText()));
+                    var waitingRoom = new WaitingForm(nameText.getText());
+                    waitingRoom.setVisible(true);
                     setVisible(false);
+                }
+                catch (Exception e){
+                    JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -67,23 +56,20 @@ public class MainForm extends JFrame{
             }
         });
 
+        JTextField numberOfPlayerText = new JTextField("2");
 
-        JButton connect = new JButton("Connect");
-        connect.addActionListener(new ActionListener() {
+        JButton newGameButton = new JButton("New Game");
+        newGameButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                game.connect("http://localhost:8080");
-                statusText.setText("Conneted: " + game.isConnected());
-
-                if(!game.isConnected()) {
-                    JOptionPane.showMessageDialog(null, "Cannot connect to server", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
+                try{
+                    gameController.createGame(urlText.getText(), nameText.getText(), Integer.valueOf(numberOfPlayerText.getText()));
+                    var waitingRoom = new WaitingForm(nameText.getText());
+                    waitingRoom.setVisible(true);
+                }catch (Exception e){
+                    JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
 
-                game.update();
-                var players = game.getPlayers();
-                playersText.setText(String.join(", ", players.stream()
-                        .map(t -> t.getName()).collect(Collectors.toList())));
             }
         });
 
@@ -92,35 +78,50 @@ public class MainForm extends JFrame{
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0; c.gridy = 0;
-        add(statusLabel, c);
+        add(new JLabel("URL:"), c);
 
         c.gridx = 1; c.gridy = 0;
-        c.weightx = 0.5;
-        add(statusText, c);
+        c.weightx = 1.0;
+        c.gridwidth = 2;
+        add(urlText, c);
 
         c.gridx = 0; c.gridy = 1;
-        add(playersLabel, c);
+        c.weightx = 0.0;
+        c.gridwidth = 1;
+        add(new JLabel("Name:"), c);
 
         c.gridx = 1; c.gridy = 1;
-        c.weightx = 0.5;
-        add(playersText, c);
+        c.weightx = 1.0;
+        c.gridwidth = 2;
+        add(nameText, c);
 
         c.gridx = 0; c.gridy = 2;
-        c.gridwidth = 2;
-        add(connect, c);
+        c.weightx = 0.0;
+        c.gridwidth = 1;
+        add(new JLabel("Number of players:"), c);
+
+        c.gridx = 1; c.gridy = 2;
+        c.weightx = 0.5;
+        add(numberOfPlayerText, c);
+
+        c.gridx = 2; c.gridy = 2;
+        add(newGameButton, c);
 
         c.gridx = 0; c.gridy = 3;
+        c.weightx = 0.0;
+        c.gridwidth = 1;
+        add(new JLabel("Game ID:"), c);
+
+        c.gridx = 1; c.gridy = 3;
+        c.weightx = 0.5;
+        add(joinIdText, c);
+
+        c.gridx = 2; c.gridy = 3;
         c.gridwidth = 2;
-        add(new Label(""), c);
+        add(joinButton, c);
 
         c.gridx = 0; c.gridy = 4;
-        c.gridwidth = 2;
-        add(name, c);
-
-        c.gridx = 0; c.gridy = 5;
-        add(join, c);
-
-        c.gridx = 0; c.gridy = 6;
+        c.gridwidth = 3;
         add(exit, c);
 
         setVisible(true);

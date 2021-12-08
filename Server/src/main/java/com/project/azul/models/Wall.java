@@ -97,7 +97,13 @@ public class Wall {
 
     public Wall clone(){
         var result = new Wall();
-        result.wall = new ArrayList<ArrayList<TilePlace>>(wall);
+        wall.forEach(line -> line.stream().filter(tile -> tile.isPlaced()).forEach(
+                (tile -> {
+                    int columnIndex = line.indexOf(tile);
+                    int rowIndex = wall.indexOf(line);
+                    wall.get(rowIndex).get(columnIndex).setPlaced(true);
+                })
+        ));
         return result;
     }
 

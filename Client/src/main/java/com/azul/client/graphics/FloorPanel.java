@@ -1,7 +1,6 @@
 package com.azul.client.graphics;
 
 import com.azul.client.controllers.GameController;
-import com.azul.client.dtos.Code;
 import com.azul.client.models.TileColor;
 
 import javax.swing.*;
@@ -55,9 +54,10 @@ public class FloorPanel extends JPanel implements Updatable{
     }
 
     private void floorClick() {
-        Code result = game.sendPick(0, true);
-        if(result.getCode() != Code.SUCCESS.getCode()){
-            JOptionPane.showMessageDialog(null, result.getDescription(), "Error", JOptionPane.ERROR_MESSAGE);
+        try{
+            game.sendPick(0, true);
+        } catch (Exception e){
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

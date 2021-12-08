@@ -1,11 +1,10 @@
 package com.project.azul.models;
 
-import com.project.azul.api.Code;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Game {
+    private UUID id;
     private ArrayList<Player> players = new ArrayList<>();
     private ArrayList<Factory> factories = new ArrayList<>();
     private TileCollection bag = new TileCollection();
@@ -15,10 +14,12 @@ public class Game {
     private State state;
     private int currentPlayerId;
 
-    public Game(int numberOfPlayers)
+    public Game(UUID id, int numberOfPlayers)
     {
         this.numberOfPlayers = numberOfPlayers;
+        this.id = id;
         state = State.WAITING_FOR_PLAYERS;
+
         createFactories(numberOfPlayers);
         initBag();
         fillFactories();
@@ -39,18 +40,13 @@ public class Game {
     }
     public TileCollection getBag() {return bag;}
 
-    public int addPlayer(Player player) {
-       players.add(player);
-       return Code.SUCCESS.getCode();
-    }
-
     public boolean isRoundOver() {
         return (center.size() == 0 && !factories.stream().anyMatch(f->f.size() > 0));
     }
 
     public void fillFactories() {
         for(var factory : factories){
-           factory.addTiles(getFourTileFromBag());
+            factory.addTiles(getFourTileFromBag());
         }
     }
 
@@ -93,47 +89,47 @@ public class Game {
         return tiles;
     }
 
-    public Code registerPlayer(String name)
-    {
+    public Player registerPlayer(String name) {
         if(state != State.WAITING_FOR_PLAYERS)
-            return Code.GAME_IS_FULL;
+            throw new RuntimeException("Game is full");
 
-        if(players.stream().anyMatch(p -> p.getName() == name))
-            return Code.PLAYER_NAME_EXISTS;
+        if(players.stream().anyMatch(p -> p.getName().equalsIgnoreCase(name)))
+            throw new RuntimeException("Player name is occupied");
 
         int id = players.size();
         Player player = new Player(id, name);
-        addPlayer(player);
+        players.add(player);
 
         if(numberOfPlayers == players.size()){
             state = State.READY;
             currentPlayerId = players.get(0).getId();
         }
-        return Code.SUCCESS;
+        return player;
     }
 
 
-    private Code pick(String playerName, Factory factory, int lineNumber, String colorName, boolean toFloor){
+    private void pick(String playerName, Factory factory, int lineNumber, String colorName, boolean toFloor) {
+
+        if(state != State.READY)
+            throw new RuntimeException("Game not started yet");
 
         var currentPlayer = getCurrentPlayer();
         if(!playerName.equalsIgnoreCase(currentPlayer.getName()))
-            return Code.WRONG_PLAYER_ORDER;
+            throw new RuntimeException("Wrong player order");
 
         var color = TileColor.valueOf(colorName);
         if(color == null)
-            return Code.COLOR_DOES_NOT_EXIST;
+            throw new RuntimeException("Color does not exist");
 
         var pickedFromFactoryTiles = factory.removeTiles(color);
         if(pickedFromFactoryTiles.size() == 0)
-            return Code.COLOR_NOT_FOUND_IN_FACTORY;
+            throw new RuntimeException("Color not found in factory");
 
         if(toFloor){
             currentPlayer.getFloor().addTiles(pickedFromFactoryTiles);
         }
         else{
-            var result = currentPlayer.addTilesToLine(pickedFromFactoryTiles, lineNumber);
-            if(result != Code.SUCCESS)
-                return result;
+            currentPlayer.addTilesToLine(pickedFromFactoryTiles, lineNumber);
         }
 
         drop.addTiles(pickedFromFactoryTiles);
@@ -141,26 +137,18 @@ public class Game {
             center.addTiles(factory.removeTiles());
         }
         checkGameState();
-        return Code.SUCCESS;
     }
 
-    public Code pickFromCenter(String playerName, int lineNumber, String colorName, boolean toFloor){
-        if(state != State.READY)
-            return Code.GAME_NOT_STARTED;
-
-        return pick(playerName, center, lineNumber, colorName, toFloor);
+    public void pickFromCenter(String playerName, int lineNumber, String colorName, boolean toFloor) {
+        pick(playerName, center, lineNumber, colorName, toFloor);
     }
 
-    public Code pickFromFactory(String playerName, int factoryId, int lineNumber, String colorName, boolean toFloor)
-    {
-        if(state != State.READY)
-            return Code.GAME_NOT_STARTED;
-
+    public void pickFromFactory(String playerName, int factoryId, int lineNumber, String colorName, boolean toFloor) {
         var factory = factories.stream().filter(f -> f.getId() == factoryId).findFirst();
         if(!factory.isPresent())
-            return Code.FACTORY_DOES_NOT_EXIST;
+            throw new RuntimeException("Factory does not exist");
 
-        return pick(playerName, factory.get(), lineNumber, colorName, toFloor);
+        pick(playerName, factory.get(), lineNumber, colorName, toFloor);
     }
 
     private void checkGameState() {
@@ -214,7 +202,7 @@ public class Game {
     }
 
     public Game clone(){
-        var game = new Game(numberOfPlayers);
+        var game = new Game(id, numberOfPlayers);
         game.players = players.stream().map(p -> p.clone()).collect(Collectors.toCollection(ArrayList::new));
         game.currentPlayerId = currentPlayerId;
         game.factories = factories.stream().map(f -> f.clone()).collect(Collectors.toCollection(ArrayList::new));
@@ -232,5 +220,9 @@ public class Game {
 
     public TileCollection getDrop() {
         return drop;
+    }
+
+    public UUID getId() {
+        return id;
     }
 }

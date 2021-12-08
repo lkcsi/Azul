@@ -5,7 +5,6 @@ import java.awt.*;
 
 public enum TileColor {
     RED (Color.RED),
-    GREEN (Color.GREEN),
     BLUE (Color.BLUE),
     WHITE (Color.WHITE),
     BLACK (Color.BLACK),

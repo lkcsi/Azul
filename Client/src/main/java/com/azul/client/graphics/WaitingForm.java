@@ -8,11 +8,11 @@ import java.util.stream.Collectors;
 
 public class WaitingForm extends JFrame {
 
-    JLabel statusLabel = new JLabel("Waiting for players...");
-    JLabel playersLabel = new JLabel("Players");
+    JTextField statusText = new JTextField("...");
     JTextField namesText = new JTextField();
+    JTextField gameIdText = new JTextField();
     private String playerName;
-    GameController game = GameController.getInstance();
+    GameController gameController = GameController.getInstance();
 
     public WaitingForm(String playerName) {
         this.playerName = playerName;
@@ -24,21 +24,32 @@ public class WaitingForm extends JFrame {
         setLocation(screen.width / 2 - getWidth() / 2, screen.height / 2 - getHeight() / 2);
 
         namesText.setEnabled(false);
+        statusText.setEnabled(false);
 
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
 
         c.fill = GridBagConstraints.HORIZONTAL;
+
         c.gridx = 0; c.gridy = 0;
-        c.gridwidth = 2;
-        add(statusLabel, c);
+        add(new JLabel("Share ID:"), c);
+
+        c.gridx = 1; c.gridy = 0;
+        c.weightx = 0.8;
+        add(gameIdText, c);
 
         c.gridx = 0; c.gridy = 1;
-        c.gridwidth = 1;
-        add(playersLabel, c);
+        c.weightx = 1.0;
+        c.gridwidth = 2;
+        add(statusText, c);
 
-        c.gridx = 1; c.gridy = 1;
-        c.weightx = 0.5;
+        c.gridx = 0; c.gridy = 2;
+        c.weightx = 0.0;
+        c.gridwidth = 1;
+        add(new JLabel("Players in game:"), c);
+
+        c.gridx = 1; c.gridy = 2;
+        c.weightx = 1.0;
         add(namesText, c);
 
         Thread thread = new Thread(startWaiting());
@@ -51,14 +62,20 @@ public class WaitingForm extends JFrame {
             public void run() {
                 while (true) {
                     try {
-                        Thread.sleep(2000);
-                        game.update();
+                        Thread.sleep(1000);
+                        gameController.update();
 
-                        var players = game.getPlayers();
+                        var game = gameController.getGame();
+                        statusText.setText(game.getState());
+
+                        if(gameIdText.getText().isEmpty())
+                            gameIdText.setText(game.getId().toString());
+
+                        var players = gameController.getPlayers();
                         namesText.setText(String.join(", ", players.stream()
                                 .map(t -> t.getName()).collect(Collectors.toList())));
 
-                        if (game.getStatus().equalsIgnoreCase("READY")){
+                        if (game.getState().equalsIgnoreCase("READY")){
                             startGame();
                             return;
                         }

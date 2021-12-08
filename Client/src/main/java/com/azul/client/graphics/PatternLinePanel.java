@@ -1,7 +1,6 @@
 package com.azul.client.graphics;
 
 import com.azul.client.controllers.GameController;
-import com.azul.client.dtos.Code;
 import com.azul.client.models.TileColor;
 
 import javax.swing.*;
@@ -71,9 +70,13 @@ public class PatternLinePanel extends JPanel implements Updatable {
     }
 
     public void patternLineClick(int line){
-        Code result = game.sendPick(line, false);
-        if(result.getCode() != Code.SUCCESS.getCode()){
-            JOptionPane.showMessageDialog(null, result.getDescription(), "Error", JOptionPane.ERROR_MESSAGE);
+        try{
+            var result = game.sendPick(line, false);
+            if(result != null)
+                JOptionPane.showMessageDialog(null, result.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+
+        } catch (Exception e){
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
