@@ -1,7 +1,6 @@
 package com.project.azul.controllers;
 
 import com.project.azul.dto.*;
-import com.project.azul.models.*;
 import com.project.azul.services.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +38,7 @@ public class GameController {
 
     @GetMapping(path = "/game")
     public GameDto getGameDto(@RequestParam("gameId") UUID gameId){
-        return new GameDto(gameService.getGame(gameId));
+        return new GameDto(gameService.getGameById(gameId));
     }
 
     @GetMapping(path = "/bag")
@@ -60,8 +59,8 @@ public class GameController {
     }
 
     @GetMapping(path = "/center")
-    public FactoryDto getCenter(@RequestParam("gameId") UUID gameId){
-        return new FactoryDto(gameService.getCenter(gameId));
+    public TileCollectionDto getCenter(@RequestParam("gameId") UUID gameId){
+        return new TileCollectionDto(gameService.getCenter(gameId));
     }
 
     @PostMapping(path = "/player")

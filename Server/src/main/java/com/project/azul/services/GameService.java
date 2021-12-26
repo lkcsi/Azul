@@ -1,26 +1,27 @@
 package com.project.azul.services;
 
+import com.project.azul.dto.CheckDto;
 import com.project.azul.dto.GameDto;
 import com.project.azul.dto.PickForm;
 import com.project.azul.dto.PlayerDto;
-import com.project.azul.models.Factory;
-import com.project.azul.models.Game;
-import com.project.azul.models.Player;
-import com.project.azul.models.TileCollection;
-import org.springframework.context.annotation.Scope;
+import com.project.azul.models.helpers.PickHelper;
+import com.project.azul.models.*;
+import com.project.azul.repositories.GameRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
 
 @Service
-@Scope("singleton")
 public class GameService {
-    private ArrayList<Game> games;
 
-    public GameService(){
-        games = new ArrayList<>();
+    GameRepository gameRepository;
+    PickHelper pickService;
+
+    @Autowired
+    public GameService(GameRepository gameRepository){
+        this.gameRepository = gameRepository;
     }
 
     public GameDto newGame(int players) {
@@ -28,56 +29,38 @@ public class GameService {
             throw new RuntimeException("Invalid number of players");
 
         var game = new Game(UUID.randomUUID(), players);
-        games.add(game);
-
+        gameRepository.add(game);
         return new GameDto(game);
     }
 
-    public void pickFromFactory(UUID gameId, PickForm pickForm) throws Exception {
-        var game = getGame(gameId);
-        var backup = getGame(gameId).clone();
+    public CheckDto pickFromFactory(UUID gameId, PickForm pickForm) throws Exception {
+        var game = getGameById(gameId);
         try {
-            game.pickFromFactory(pickForm.getPlayerName(),
-                    pickForm.getFactoryId(),
-                    pickForm.getLineNumber(),
-                    pickForm.getColor(),
-                    pickForm.isToFloor());
+            new PickHelper(game).pickFromFactory(pickForm);
         } catch (Exception e) {
-            setGame(gameId, backup);
-            throw e;
+            return new CheckDto(false, e.getMessage());
         }
+        return new CheckDto(true, "Success");
     }
-    public void pickFromCenter(UUID gameId, PickForm pickForm) throws Exception {
-        var game = getGame(gameId);
-        var backup = game.clone();
-        try {
-            game.pickFromCenter(pickForm.getPlayerName(),
-                    pickForm.getLineNumber(),
-                    pickForm.getColor(),
-                    pickForm.isToFloor());
-        } catch (Exception e) {
-            setGame(gameId, backup);
-            throw e;
-        }
+    public CheckDto pickFromCenter(UUID gameId, PickForm pickForm) throws Exception {
+        pickForm.setFactoryId(10);
+        return pickFromFactory(gameId, pickForm);
     }
+
     public PlayerDto addPlayer(UUID gameId, String playerName) {
-        var game = getGame(gameId);
+        var game = getGameById(gameId);
         return new PlayerDto(game.registerPlayer(playerName));
     }
 
-    public Game getGame(UUID gameId){
-        var result = games.stream().filter(g -> g.getId().equals(gameId)).findFirst();
-        if(!result.isPresent())
+    public Game getGameById(UUID gameId){
+        var result = gameRepository.getGameById(gameId);
+        if(result == null)
             throw new RuntimeException("Game not found");
-        return result.get();
-    }
-    public void setGame(UUID gameId, Game game){
-        var result = games.stream().filter(g -> g.getId().equals(gameId)).findFirst();
-        games.set(games.indexOf(result.get()), game);
+        return result;
     }
 
     public Player getPlayer(UUID gameId, String playerName) throws Exception {
-        var game = getGame(gameId);
+        var game = getGameById(gameId);
         var player = game
                 .getPlayers()
                 .stream()
@@ -91,22 +74,22 @@ public class GameService {
     }
 
     public Collection<Player> getPlayers(UUID gameId){
-        return getGame(gameId).getPlayers();
+        return getGameById(gameId).getPlayers();
     }
 
-    public Factory getCenter(UUID gameId) {
-        return getGame(gameId).getCenter();
+    public TileCollection getCenter(UUID gameId) {
+        return getGameById(gameId).getCenter();
     }
 
     public Collection<Factory> getFactories(UUID gameId) {
-        return getGame(gameId).getFactories();
+        return getGameById(gameId).getFactories();
     }
 
     public TileCollection getBag(UUID gameId) {
-        return getGame(gameId).getBag();
+        return getGameById(gameId).getBag();
     }
 
     public TileCollection getDrop(UUID gameId) {
-        return getGame(gameId).getDrop();
+        return getGameById(gameId).getDrop();
     }
 }

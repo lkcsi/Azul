@@ -8,7 +8,8 @@ public enum TileColor {
     BLUE (Color.BLUE),
     WHITE (Color.WHITE),
     BLACK (Color.BLACK),
-    YELLOW (Color.YELLOW);
+    YELLOW (Color.YELLOW),
+    MARKER (Color.GRAY);
 
     private Color color;
 

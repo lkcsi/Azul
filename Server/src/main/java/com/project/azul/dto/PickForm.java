@@ -7,6 +7,15 @@ public class PickForm {
     private int lineNumber;
     private boolean toFloor;
 
+    public PickForm(){}
+    public PickForm(String playerName, int factoryId, String colorName, int lineNumber, boolean toFloor){
+        this.playerName = playerName;
+        this.factoryId = factoryId;
+        this.color = colorName;
+        this.lineNumber = lineNumber;
+        this.toFloor = toFloor;
+    }
+
     public String getPlayerName() {
         return playerName;
     }
@@ -39,7 +48,7 @@ public class PickForm {
         this.lineNumber = lineNumber;
     }
 
-    public boolean isToFloor() {
+    public boolean toFloor() {
         return toFloor;
     }
 
